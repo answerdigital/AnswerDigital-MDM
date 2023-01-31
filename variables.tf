@@ -14,7 +14,7 @@ variable "db_username" {
 variable "db_name" {
   description = "DB name"
   type        = string
-  default     = "answer_king"
+  default     = "mdm_db"
 }
 
 variable "db_port" {
