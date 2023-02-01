@@ -4,9 +4,9 @@
 secrets.tfvars
 terraform.tfstate
 terraform.tfstate.backup
+venv
 
 test/.idea
 test/.pytest_cache
-test/venv
 
 **/__pycache__
