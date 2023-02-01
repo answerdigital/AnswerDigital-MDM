@@ -33,7 +33,25 @@ def test_check_configuration(snapshot):
     s.request("POST", endpoint, headers=headers, data=payload)
     endpoint = f"{url}api/admin/modules"
     response = s.request("GET", endpoint, headers=headers, data={})
-    snapshot.assert_match(response.text, 'plugin_response')
+    snapshot.assert_match(json.loads(response.text), 'plugin_response')
     endpoint = f"{url}api/admin/properties"
     response = s.request("GET", endpoint, headers=headers, data={})
-    snapshot.assert_match(response.text, 'properties_response')
+    snapshot.assert_match(load_json_remove_id(response.text), 'properties_response')
+
+
+def load_json_remove_id(json_string):
+    obj = json.loads(json_string)
+    remove_id(obj)
+    return obj
+
+
+def remove_id(obj):
+    if isinstance(obj, dict):
+        for key in list(obj.keys()):
+            if key == 'id':
+                obj.pop(key)
+            else:
+                remove_id(obj[key])
+    elif isinstance(obj, list):
+        for item in obj:
+            remove_id(item)
