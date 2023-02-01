@@ -116,9 +116,9 @@ resource "aws_instance" "mdm_java" {
                 # run docker containers based on the built docker compose images
                 docker-compose build
                 docker network create -d bridge mdm-network
-                docker run -d -v postgres12:/var/lib/postgresql/data --name postgres --shm-size 512mb --network mdm-network -e POSTGRES_PASSWORD=postgresisawesome maurodatamapper/postgres:12.0-alpine
-                docker run -d --network mdm-network -p 8082:8080 -e PGPASSWORD=postgresisawesome -e runtime.config.path=/usr/local/tomcat/conf/runtime.yml maurodatamapper/mauro-data-mapper:2022.3
-                # docker container run --name answer-king-rest-api-container  --restart=always --name answer-king-rest-api-container -e "RDS_USERNAME=${var.db_username}" -e "RDS_PASSWORD=${var.db_password}" -e "RDS_HOSTNAME=${aws_db_instance.mdm_database.address}" -e "RDS_PORT=${var.db_port}" -e "RDS_DB_NAME=${var.db_name}" -e "SPRING_PROFILES_ACTIVE=${var.spring_profile}" -e "MYSQLDB_PASSWORD=${var.db_password}" -e "MYSQLDB_USER=${var.db_username}" -e "MYSQL_URL=jdbc:mysql://${aws_db_instance.mdm_database.address}:${var.db_port}/${var.db_name}" -p ${var.http_server_port}:${var.http_server_port} -d ghcr.io/answerconsulting/answerking-java/answer-king-rest-api_app:latest
+                # docker run -d -v postgres12:/var/lib/postgresql/data --name postgres --shm-size 512mb --network mdm-network -e POSTGRES_PASSWORD=postgresisawesome maurodatamapper/postgres:12.0-alpine
+                # docker run -d --network mdm-network -p 8082:8080 -e PGPASSWORD=postgresisawesome -e runtime.config.path=/usr/local/tomcat/conf/runtime.yml maurodatamapper/mauro-data-mapper:2022.3
+                # docker container run --name answer-king-rest-api-container  --restart=always --name answer-king-rest-api-container -e "RDS_USERNAME=${var.db_username}" -e "RDS_PASSWORD=${var.db_password}" -e "RDS_HOSTNAME=${aws_rds_cluster.postgres_cluster.endpoint}" -e "RDS_PORT=${var.db_port}" -e "RDS_DB_NAME=${var.db_name}" -e "MYSQLDB_PASSWORD=${var.db_password}" -e "MYSQLDB_USER=${var.db_username}" -e "MYSQL_URL=jdbc:mysql://${aws_rds_cluster.postgres_cluster.endpoint}:${var.db_port}/${var.db_name}" -p ${var.http_server_port}:${var.http_server_port} -d ghcr.io/answerconsulting/answerking-java/answer-king-rest-api_app:latest
                 EOF
 
   user_data_replace_on_change = true
@@ -127,21 +127,34 @@ resource "aws_instance" "mdm_java" {
   }
 }
 
-resource "aws_db_instance" "mdm_database" {
-  instance_class         = "db.t2.micro"
-  identifier_prefix      = "mdm-db"
-  allocated_storage      = 5
-  engine                 = "mysql"
-  engine_version         = "8.0.27"
-  skip_final_snapshot    = true
-  db_name                = var.db_name
-  db_subnet_group_name   = aws_db_subnet_group.mdm_db_subnet_group.id
-  vpc_security_group_ids = [aws_security_group.mdm_db_sg.id]
+resource "aws_rds_cluster" "postgres_cluster" {
+  cluster_identifier      = "aurora-cluster-mdm"
+  engine                  = "aurora-postgresql"
+  availability_zones      = ["eu-west-2a"]
+  database_name           = var.db_name
+  master_username         = var.db_username
+  master_password         = var.db_password
+  backup_retention_period = 5
+  skip_final_snapshot     = true
+  preferred_backup_window = "07:00-09:00"
+  db_subnet_group_name    = aws_db_subnet_group.mdm_db_subnet_group.id
+  vpc_security_group_ids  = [aws_security_group.mdm_db_sg.id]
 
-  username = var.db_username
-  password = var.db_password
+  tags = {
+    Name = "mdm-rds-cluster"
+  }
 }
 
+resource "aws_rds_cluster_instance" "postgres_instances" {
+  identifier = "mdm-postgresdb-${count.index}"
+  count = 1
+  cluster_identifier = aws_rds_cluster.postgres_cluster.id
+  instance_class     = "db.t3.medium"
+
+  engine             = aws_rds_cluster.postgres_cluster.engine
+  engine_version     = aws_rds_cluster.postgres_cluster.engine_version
+  publicly_accessible = false
+}
 
 resource "aws_security_group" "mdm_api_sg" {
   name        = "mdm_api_sg"
