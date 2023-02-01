@@ -13,9 +13,9 @@ url = os.getenv('MDM_INSTANCE_BASE_URL', 'http://localhost:8082/')
 def test_login(page: Page):
     page.goto(url)
     page.locator("#mdm--navbar-desktop").get_by_role("button", name="Log in").click()
-    page.get_by_placeholder("Enter your email").click()
+    page.get_by_label("Email *").click()
     page.get_by_placeholder("Enter your email").fill("admin@maurodatamapper.com")
-    page.get_by_placeholder("Enter your password").click()
+    page.get_by_label("Password *").click()
     page.get_by_placeholder("Enter your password").fill("password")
     page.get_by_role("button", name="Log in").click()
 
