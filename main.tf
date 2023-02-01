@@ -81,7 +81,7 @@ resource "aws_eip" "mdm_eip" {
 resource "aws_instance" "mdm_java" {
   count                  = 1
   ami                    = "ami-084e8c05825742534"
-  instance_type          = "t2.micro"
+  instance_type          = "t2.large"
   subnet_id              = aws_subnet.mdm_public_subnet[count.index].id
   vpc_security_group_ids = [aws_security_group.mdm_api_sg.id]
   key_name               = aws_key_pair.generated_key.key_name
@@ -97,6 +97,8 @@ resource "aws_instance" "mdm_java" {
                 yum update -y && yum upgrade -y
                 # Install components
                 yum install -y docker
+                yum install -y git
+
                 # Add credential helper to pull from ECR
                 mkdir -p ~/.docker && chmod 0700 ~/.docker
                 # Start docker now and enable auto start on boot
@@ -104,6 +106,18 @@ resource "aws_instance" "mdm_java" {
                 # Allow the ec2-user to run docker commands without sudo
                 usermod -a -G docker ec2-user
                 # Run application at start
+                git clone https://github.com/MauroDataMapper/mdm-docker.git
+                cd mdm-docker
+
+                # install docker compose
+                curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+                sudo chmod +x /usr/local/bin/docker-compose
+
+                # run docker containers based on the built docker compose images
+                docker-compose build
+                docker network create -d bridge mdm-network
+                docker run -d -v postgres12:/var/lib/postgresql/data --name postgres --shm-size 512mb --network mdm-network -e POSTGRES_PASSWORD=postgresisawesome maurodatamapper/postgres:12.0-alpine
+                docker run -d --network mdm-network -p 8082:8080 -e PGPASSWORD=postgresisawesome -e runtime.config.path=/usr/local/tomcat/conf/runtime.yml maurodatamapper/mauro-data-mapper:2022.3
                 # docker container run --name answer-king-rest-api-container  --restart=always --name answer-king-rest-api-container -e "RDS_USERNAME=${var.db_username}" -e "RDS_PASSWORD=${var.db_password}" -e "RDS_HOSTNAME=${aws_db_instance.mdm_database.address}" -e "RDS_PORT=${var.db_port}" -e "RDS_DB_NAME=${var.db_name}" -e "SPRING_PROFILES_ACTIVE=${var.spring_profile}" -e "MYSQLDB_PASSWORD=${var.db_password}" -e "MYSQLDB_USER=${var.db_username}" -e "MYSQL_URL=jdbc:mysql://${aws_db_instance.mdm_database.address}:${var.db_port}/${var.db_name}" -p ${var.http_server_port}:${var.http_server_port} -d ghcr.io/answerconsulting/answerking-java/answer-king-rest-api_app:latest
                 EOF
 
