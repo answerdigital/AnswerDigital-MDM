@@ -28,7 +28,7 @@ variable "spring_profile" {
 }
 
 variable "http_server_port" {
-  default = 8080
+  default = 8082
 }
 
 variable "ssh_server_port" {
