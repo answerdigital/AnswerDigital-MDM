@@ -18,7 +18,7 @@ variable "db_name" {
 }
 
 variable "db_port" {
-  default = 3306
+  default = 5432
 }
 
 variable "http_server_port" {

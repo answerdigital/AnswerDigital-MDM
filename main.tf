@@ -41,7 +41,7 @@ resource "aws_subnet" "mdm_private_subnet" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
-    Name = "tutorial_private_subnet_${count.index}"
+    Name = "mdm_private_subnet_${count.index}"
   }
 }
 
@@ -114,8 +114,8 @@ resource "aws_instance" "mdm_java" {
                 sudo chmod +x /usr/local/bin/docker-compose
 
                 # run docker containers based on the built docker compose images
-                docker-compose build
                 docker network create -d bridge mdm-network
+                # docker-compose build
                 # docker run -d -v postgres12:/var/lib/postgresql/data --name postgres --shm-size 512mb --network mdm-network -e POSTGRES_PASSWORD=postgresisawesome maurodatamapper/postgres:12.0-alpine
                 # docker run -d --network mdm-network -p 8082:8080 -e PGPASSWORD=postgresisawesome -e runtime.config.path=/usr/local/tomcat/conf/runtime.yml maurodatamapper/mauro-data-mapper:2022.3
                 # docker container run --name answer-king-rest-api-container  --restart=always --name answer-king-rest-api-container -e "RDS_USERNAME=${var.db_username}" -e "RDS_PASSWORD=${var.db_password}" -e "RDS_HOSTNAME=${aws_rds_cluster.postgres_cluster.endpoint}" -e "RDS_PORT=${var.db_port}" -e "RDS_DB_NAME=${var.db_name}" -e "MYSQLDB_PASSWORD=${var.db_password}" -e "MYSQLDB_USER=${var.db_username}" -e "MYSQL_URL=jdbc:mysql://${aws_rds_cluster.postgres_cluster.endpoint}:${var.db_port}/${var.db_name}" -p ${var.http_server_port}:${var.http_server_port} -d ghcr.io/answerconsulting/answerking-java/answer-king-rest-api_app:latest
@@ -130,6 +130,7 @@ resource "aws_instance" "mdm_java" {
 resource "aws_rds_cluster" "postgres_cluster" {
   cluster_identifier      = "aurora-cluster-mdm"
   engine                  = "aurora-postgresql"
+  engine_version          = "12.0"
   availability_zones      = ["eu-west-2a"]
   database_name           = var.db_name
   master_username         = var.db_username
@@ -194,10 +195,10 @@ resource "aws_security_group" "mdm_db_sg" {
   vpc_id = aws_vpc.mdm_vpc.id
 
   ingress {
-    description     = "Allow MySQL traffic from only the web sg"
-    from_port       = "3306"
+    description     = "Allow DB traffic from only the web sg"
+    from_port       = var.db_port
     protocol        = "tcp"
-    to_port         = "3306"
+    to_port         = var.db_port
     security_groups = [aws_security_group.mdm_api_sg.id]
   }
 
