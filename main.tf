@@ -130,7 +130,6 @@ resource "aws_instance" "mdm_java" {
 resource "aws_rds_cluster" "postgres_cluster" {
   cluster_identifier      = "aurora-cluster-mdm"
   engine                  = "aurora-postgresql"
-  engine_version          = "12.0"
   availability_zones      = ["eu-west-2a"]
   database_name           = var.db_name
   master_username         = var.db_username
