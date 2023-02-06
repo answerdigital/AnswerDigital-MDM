@@ -7,24 +7,18 @@ variable "db_password" {
 variable "db_username" {
   description = "Username to connect to DB"
   type        = string
-  default     = "test_user"
+  default     = "maurodatamapperuser"
   sensitive   = true
 }
 
 variable "db_name" {
   description = "DB name"
   type        = string
-  default     = "mdm_db"
+  default     = "maurodatamapper"
 }
 
 variable "db_port" {
-  default = 3306
-}
-
-variable "spring_profile" {
-  description = "Spring profile"
-  type        = string
-  default     = "production"
+  default = 5432
 }
 
 variable "http_server_port" {

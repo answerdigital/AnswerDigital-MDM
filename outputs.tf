@@ -12,12 +12,12 @@ output "web_public_dns" {
 
 output "database_endpoint" {
   description = "The endpoint of the database"
-  value       = aws_db_instance.mdm_database.address
+  value       = aws_rds_cluster_instance.postgres_instances[0].endpoint
 }
 
 output "database_port" {
   description = "The port of the database"
-  value       = aws_db_instance.mdm_database.port
+  value       = aws_rds_cluster.postgres_cluster.port
 }
 
 output "private_pem" {
