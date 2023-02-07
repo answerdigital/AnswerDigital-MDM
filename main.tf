@@ -108,6 +108,8 @@ resource "aws_instance" "mdm_java" {
                 # Run application at start
                 git clone https://github.com/MauroDataMapper/mdm-docker.git
                 cd mdm-docker
+                # clears postgres image, volume and dependancy on mauro-data-mapper image
+                sed -i '3,11d;28d;29d;39d;40d' docker-compose.yml
 
                 # install docker compose
                 curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
