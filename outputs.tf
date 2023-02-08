@@ -19,8 +19,3 @@ output "database_port" {
   description = "The port of the database"
   value       = aws_rds_cluster.postgres_cluster.port
 }
-
-output "private_pem" {
-  value     = tls_private_key.example.private_key_pem
-  sensitive = true
-}

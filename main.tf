@@ -84,7 +84,7 @@ resource "aws_instance" "mdm_java" {
   instance_type          = "t2.large"
   subnet_id              = aws_subnet.mdm_public_subnet[count.index].id
   vpc_security_group_ids = [aws_security_group.mdm_api_sg.id]
-  key_name               = "mdm-dev"
+  key_name               = var.ssh_key
 
 
   user_data = <<-EOF
