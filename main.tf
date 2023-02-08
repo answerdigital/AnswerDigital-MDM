@@ -84,7 +84,7 @@ resource "aws_instance" "mdm_java" {
   instance_type          = "t2.large"
   subnet_id              = aws_subnet.mdm_public_subnet[count.index].id
   vpc_security_group_ids = [aws_security_group.mdm_api_sg.id]
-  key_name               = aws_key_pair.generated_key.key_name
+  key_name               = var.ssh_key
 
 
   user_data = <<-EOF
@@ -220,12 +220,3 @@ resource "aws_db_subnet_group" "mdm_db_subnet_group" {
   subnet_ids  = [for subnet in aws_subnet.mdm_private_subnet : subnet.id]
 }
 
-resource "tls_private_key" "example" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
-
-resource "aws_key_pair" "generated_key" {
-  key_name   = var.ec2_key_name
-  public_key = tls_private_key.example.public_key_openssh
-}

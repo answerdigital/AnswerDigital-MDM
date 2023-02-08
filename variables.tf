@@ -72,3 +72,9 @@ variable "private_subnet_cidr_blocks" {
     "10.0.104.0/24",
   ]
 }
+
+variable "ssh_key" {
+  description = "existing ssh key"
+  type        = string
+  default     = "mdm-dev"
+}
