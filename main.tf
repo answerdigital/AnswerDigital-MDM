@@ -118,7 +118,6 @@ resource "aws_instance" "mdm_java" {
                 # run docker containers based on the built docker compose images
                 docker network create -d bridge mdm-network
                 docker-compose build
-                docker run -d -v postgres12:/var/lib/postgresql/data --name postgres --shm-size 512mb --network mdm-network -e POSTGRES_PASSWORD=postgresisawesome maurodatamapper/postgres:12.0-alpine
                 docker run -d --network mdm-network -p 8082:8080 -e FLYWAY_IGNORE=V5_1_3__delete_invalid_breadcrumb_trees.sql -e DATABASE_PASSWORD=${var.db_password} -e DATABASE_USERNAME=${var.db_username} -e DATABASE_HOST=${aws_rds_cluster_instance.postgres_instances[0].endpoint} -e database.host=${aws_rds_cluster_instance.postgres_instances[0].endpoint} -e runtime.config.path=/usr/local/tomcat/conf/runtime.yml maurodatamapper/mauro-data-mapper:2022.3
                 EOF
 
