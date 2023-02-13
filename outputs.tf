@@ -16,7 +16,7 @@ output "database_endpoint" {
 }
 
 output "secondary_database_endpoint" {
-  description = "The endpoint of the database"
+  description = "The endpoint of secondary database"
   value       = aws_rds_cluster_instance.postgres_secondary_instance[0].endpoint
 }
 
