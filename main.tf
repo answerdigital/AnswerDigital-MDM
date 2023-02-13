@@ -118,12 +118,12 @@ resource "aws_instance" "mdm_java" {
                 # run docker containers based on the built docker compose images
                 docker network create -d bridge mdm-network
                 docker-compose build --no-cache --build-arg MDM_APPLICATION_COMMIT=develop --build-arg MDM_UI_COMMIT=develop
-                docker run -d --network mdm-network -p 8082:8080 -e DATABASE_PASSWORD=${var.db_password} -e DATABASE_USERNAME=${var.db_username} -e DATABASE_HOST=${aws_rds_cluster_instance.postgres_instances[0].endpoint} -e database.host=${aws_rds_cluster_instance.postgres_instances[0].endpoint} -e runtime.config.path=/usr/local/tomcat/conf/runtime.yml maurodatamapper/mauro-data-mapper:2022.3
+                docker run -d --network mdm-network -p 8082:8080 -e DATABASE_PASSWORD=${var.db_password} -e DATABASE_USERNAME=${var.db_username} -e DATABASE_HOST=${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint} -e database.host=${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint} -e runtime.config.path=/usr/local/tomcat/conf/runtime.yml maurodatamapper/mauro-data-mapper:2022.3
                 EOF
 
   depends_on = [
     # Aurora Postgres Instance must be created before endpoint name can be used
-    aws_rds_cluster_instance.postgres_instances[0]
+    aws_rds_cluster_instance.postgres_primary_instance[0]
   ]
 
   user_data_replace_on_change = true
@@ -135,7 +135,8 @@ resource "aws_instance" "mdm_java" {
 resource "aws_rds_cluster" "postgres_cluster" {
   cluster_identifier      = "aurora-cluster-mdm"
   engine                  = "aurora-postgresql"
-  availability_zones      = ["eu-west-2a"]
+  engine_mode             = "global"
+  availability_zones      = ["eu-west-2a", "eu-west-2b"]
   database_name           = var.db_name
   master_username         = var.db_username
   master_password         = var.db_password
@@ -150,14 +151,26 @@ resource "aws_rds_cluster" "postgres_cluster" {
   }
 }
 
-resource "aws_rds_cluster_instance" "postgres_instances" {
-  identifier = "mdm-postgresdb-${count.index}"
+resource "aws_rds_cluster_instance" "postgres_primary_instance" {
+  identifier         = "mdm-postgresdb-primary"
   count = 1
   cluster_identifier = aws_rds_cluster.postgres_cluster.id
   instance_class     = "db.t3.medium"
+  availability_zone  = "eu-west-2a"
 
-  engine             = aws_rds_cluster.postgres_cluster.engine
-  engine_version     = aws_rds_cluster.postgres_cluster.engine_version
+  engine              = aws_rds_cluster.postgres_cluster.engine
+  engine_version      = aws_rds_cluster.postgres_cluster.engine_version
+  publicly_accessible = false
+}
+resource "aws_rds_cluster_instance" "postgres_secondary_instance" {
+  identifier         = "mdm-postgresdb-secondary"
+  count = 1
+  cluster_identifier = aws_rds_cluster.postgres_cluster.id
+  instance_class     = "db.t3.medium"
+  availability_zone  = "eu-west-2b"
+
+  engine              = aws_rds_cluster.postgres_cluster.engine
+  engine_version      = aws_rds_cluster.postgres_cluster.engine_version
   publicly_accessible = false
 }
 

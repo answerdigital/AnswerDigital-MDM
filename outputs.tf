@@ -12,7 +12,7 @@ output "web_public_dns" {
 
 output "database_endpoint" {
   description = "The endpoint of the database"
-  value       = aws_rds_cluster_instance.postgres_instances[0].endpoint
+  value       = aws_rds_cluster_instance.postgres_primary_instance[0].endpoint
 }
 
 output "database_port" {
