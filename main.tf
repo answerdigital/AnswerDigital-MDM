@@ -136,7 +136,7 @@ resource "aws_rds_cluster" "postgres_cluster" {
   cluster_identifier      = "aurora-cluster-mdm"
   engine                  = "aurora-postgresql"
   engine_mode             = "global"
-  availability_zones      = ["eu-west-2a", "eu-west-2b"]
+  availability_zones      = [var.az_west_a, var.az_west_b]
   database_name           = var.db_name
   master_username         = var.db_username
   master_password         = var.db_password
@@ -156,7 +156,7 @@ resource "aws_rds_cluster_instance" "postgres_primary_instance" {
   count = 1
   cluster_identifier = aws_rds_cluster.postgres_cluster.id
   instance_class     = "db.t3.medium"
-  availability_zone  = "eu-west-2a"
+  availability_zone  = var.az_west_a
 
   engine              = aws_rds_cluster.postgres_cluster.engine
   engine_version      = aws_rds_cluster.postgres_cluster.engine_version
@@ -167,7 +167,7 @@ resource "aws_rds_cluster_instance" "postgres_secondary_instance" {
   count = 1
   cluster_identifier = aws_rds_cluster.postgres_cluster.id
   instance_class     = "db.t3.medium"
-  availability_zone  = "eu-west-2b"
+  availability_zone  = var.az_west_b
 
   engine              = aws_rds_cluster.postgres_cluster.engine
   engine_version      = aws_rds_cluster.postgres_cluster.engine_version

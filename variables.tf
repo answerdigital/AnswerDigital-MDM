@@ -78,3 +78,15 @@ variable "ssh_key" {
   type        = string
   default     = "mdm-dev"
 }
+
+variable "az_west_a" {
+  description = "aws availability zone region 2A"
+  type        = string
+  default     = "eu-west-2a"
+}
+
+variable "az_west_b" {
+  description = "aws availability zone region 2B"
+  type        = string
+  default     = "eu-west-2b"
+}
