@@ -7,7 +7,7 @@ import requests
 import json
 import os
 
-url = os.getenv('MDM_INSTANCE_BASE_URL', 'http://localhost:8082/')
+url = os.getenv('MDM_INSTANCE_BASE_URL', 'http://ec2-13-41-149-232.eu-west-2.compute.amazonaws.com:8082/')
 
 
 def test_login(page: Page):
