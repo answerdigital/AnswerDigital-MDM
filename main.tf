@@ -71,14 +71,14 @@ resource "aws_route_table_association" "private" {
 
 resource "aws_eip" "mdm_eip" {
   count    = 1
-  instance = aws_instance.mdm_java[count.index].id
+  instance = aws_instance.mdm_app[count.index].id
   vpc      = true
   tags = {
     Name = "mdm_eip_${count.index}"
   }
 }
 
-resource "aws_instance" "mdm_java" {
+resource "aws_instance" "mdm_app" {
   count                  = 1
   ami                    = "ami-084e8c05825742534"
   instance_type          = "t2.large"
