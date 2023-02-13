@@ -1,0 +1,12 @@
+.idea
+.terraform
+.terraform.lock.hcl
+secrets.tfvars
+terraform.tfstate
+terraform.tfstate.backup
+venv
+
+test/.idea
+test/.pytest_cache
+
+**/__pycache__
