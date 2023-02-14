@@ -69,70 +69,99 @@ resource "aws_route_table_association" "private" {
   subnet_id      = aws_subnet.mdm_private_subnet[count.index].id
 }
 
-resource "aws_eip" "mdm_eip" {
-  count    = 1
-  instance = aws_instance.mdm_app[count.index].id
-  vpc      = true
+resource "aws_elb" "mdm_elb" {
+  name = "mdm-elb"
+  security_groups = [aws_security_group.mdm_api_sg.id]
+  subnets = [aws_subnet.mdm_public_subnet[0].id]
+
+  listener {
+  instance_port = var.http_server_port
+  instance_protocol = "http"
+  lb_port = var.http_server_port
+  lb_protocol = "http"
+  }
+  health_check {
+  healthy_threshold = 2
+  unhealthy_threshold = 2
+  timeout = 3
+  target = "HTTP:${var.http_server_port}/"
+  interval = 30
+  }
+
+  instances = [aws_instance.mdm_app1[0].id, aws_instance.mdm_app2[0].id]
+  cross_zone_load_balancing = true
+  idle_timeout = 400
+  connection_draining = true
+  connection_draining_timeout = 400
+
   tags = {
-    Name = "mdm_eip_${count.index}"
+    Name = "mdm-elb"
   }
 }
 
-resource "aws_instance" "mdm_app" {
+resource "aws_instance" "mdm_app1" {
   count                  = 1
   ami                    = "ami-084e8c05825742534"
   instance_type          = "t2.large"
   subnet_id              = aws_subnet.mdm_public_subnet[count.index].id
   vpc_security_group_ids = [aws_security_group.mdm_api_sg.id]
   key_name               = var.ssh_key
-
+  associate_public_ip_address = true
 
   user_data = <<-EOF
                 #!/bin/bash
-
-                set -e
-                # Output all log
-                exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
-                # Make sure we have all the latest updates when we launch this instance
-                yum update -y && yum upgrade -y
-                # Install components
-                yum install -y docker
-                yum install -y git
-
-                # Add credential helper to pull from ECR
-                mkdir -p ~/.docker && chmod 0700 ~/.docker
-                # Start docker now and enable auto start on boot
-                service docker start && chkconfig docker on
-                # Allow the ec2-user to run docker commands without sudo
-                usermod -a -G docker ec2-user
-                # Run application at start
-                git clone https://github.com/MauroDataMapper/mdm-docker.git
-                cd mdm-docker
-                # clears postgres image, volume and dependancy on mauro-data-mapper image
-                sed -i '3,11d;28d;29d;39d;40d' docker-compose.yml
-
-                # install docker compose
-                curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
-                sudo chmod +x /usr/local/bin/docker-compose
-
-                # run docker containers based on the built docker compose images
-                docker network create -d bridge mdm-network
-                docker-compose build --no-cache --build-arg MDM_APPLICATION_COMMIT=develop --build-arg MDM_UI_COMMIT=develop
-                docker run -d --network mdm-network -p 8082:8080 -e DATABASE_PASSWORD=${var.db_password} -e DATABASE_USERNAME=${var.db_username} -e DATABASE_HOST=${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint} -e database.host=${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint} -e runtime.config.path=/usr/local/tomcat/conf/runtime.yml maurodatamapper/mauro-data-mapper:2022.3
+                # Use this for your user data (script from top to bottom)
+                # install httpd (Linux 2 version)
+                yum update -y
+                yum install -y httpd
+                systemctl start httpd
+                systemctl enable httpd
+                echo "<h1>Hello World from $(hostname -f)</h1>" > /var/www/html/index.html
                 EOF
 
   depends_on = [
     # Aurora Postgres Instance must be created before endpoint name can be used
-    aws_rds_cluster_instance.postgres_primary_instance[0]
+    # aws_rds_cluster_instance.postgres_primary_instance[0]
   ]
 
   user_data_replace_on_change = true
   tags = {
-    Name = "mdm-app"
+    Name = "mdm-app1"
   }
 }
 
-resource "aws_rds_cluster" "postgres_cluster" {
+resource "aws_instance" "mdm_app2" {
+  count                  = 1
+  ami                    = "ami-084e8c05825742534"
+  instance_type          = "t2.large"
+  subnet_id              = aws_subnet.mdm_public_subnet[count.index].id
+  vpc_security_group_ids = [aws_security_group.mdm_api_sg.id]
+  key_name               = var.ssh_key
+  associate_public_ip_address = true
+
+  user_data = <<-EOF
+                #!/bin/bash
+                # Use this for your user data (script from top to bottom)
+                # install httpd (Linux 2 version)
+                yum update -y
+                yum install -y httpd
+                systemctl start httpd
+                systemctl enable httpd
+                echo "<h1>Hello World from $(hostname -f)</h1>" > /var/www/html/index.html
+                EOF
+
+  depends_on = [
+    # Aurora Postgres Instance must be created before endpoint name can be used
+    # aws_rds_cluster_instance.postgres_primary_instance[0]
+  ]
+
+  user_data_replace_on_change = true
+  tags = {
+    Name = "mdm-app2"
+  }
+}
+
+/*resource "aws_rds_cluster" "postgres_cluster" {
   cluster_identifier      = "aurora-cluster-mdm"
   engine                  = "aurora-postgresql"
   engine_mode             = "global"
@@ -172,7 +201,7 @@ resource "aws_rds_cluster_instance" "postgres_secondary_instance" {
   engine              = aws_rds_cluster.postgres_cluster.engine
   engine_version      = aws_rds_cluster.postgres_cluster.engine_version
   publicly_accessible = false
-}
+}*/
 
 resource "aws_security_group" "mdm_api_sg" {
   name        = "mdm_api_sg"
