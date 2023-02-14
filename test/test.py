@@ -1,7 +1,3 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 from playwright.sync_api import Page
 import requests
 import json
@@ -9,8 +5,6 @@ import os
 import boto3
 
 ec2_client = boto3.client('ec2')
-
-# Replace 'your-instance-name' with the name tag of your instance
 instance_name = 'mdm-app'
 
 response = ec2_client.describe_instances(
