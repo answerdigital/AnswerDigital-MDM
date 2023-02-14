@@ -6,8 +6,24 @@ from playwright.sync_api import Page
 import requests
 import json
 import os
+import boto3
 
-url = os.getenv('MDM_INSTANCE_BASE_URL', 'http://ec2-13-41-149-232.eu-west-2.compute.amazonaws.com:8082/')
+ec2_client = boto3.client('ec2')
+
+# Replace 'your-instance-name' with the name tag of your instance
+instance_name = 'mdm-app'
+
+response = ec2_client.describe_instances(
+    Filters=[
+        {
+            'Name': 'tag:Name',
+            'Values': [instance_name]
+        }
+    ]
+)
+
+public_ip = response['Reservations'][0]['Instances'][0]['PublicIpAddress']
+url = os.getenv('MDM_INSTANCE_BASE_URL', public_ip)
 
 
 def test_login(page: Page):
