@@ -6,67 +6,13 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
-resource "aws_vpc" "mdm_vpc" {
-  cidr_block           = var.vpc_cidr_block
-  enable_dns_hostnames = true
-
-  tags = {
-    Name = "mdm_vpc"
-  }
-}
-
-resource "aws_internet_gateway" "mdm_igw" {
-  vpc_id = aws_vpc.mdm_vpc.id
-
-  tags = {
-    Name = "mdm_igw"
-  }
-}
-
-resource "aws_subnet" "mdm_public_subnet" {
-  count             = var.subnet_count.public
-  cidr_block        = var.public_subnet_cidr_blocks[count.index]
-  vpc_id            = aws_vpc.mdm_vpc.id
-  availability_zone = data.aws_availability_zones.available.names[count.index]
-
-  tags = {
-    Name = "mdm_public_subnet_${count.index}"
-  }
-}
-
-resource "aws_subnet" "mdm_private_subnet" {
-  count             = var.subnet_count.private
-  vpc_id            = aws_vpc.mdm_vpc.id
-  cidr_block        = var.private_subnet_cidr_blocks[count.index]
-  availability_zone = data.aws_availability_zones.available.names[count.index]
-
-  tags = {
-    Name = "mdm_private_subnet_${count.index}"
-  }
-}
-
-resource "aws_route_table" "mdm_public_rt" {
-  vpc_id = aws_vpc.mdm_vpc.id
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.mdm_igw.id
-  }
-}
-
-resource "aws_route_table_association" "public" {
-  count          = var.subnet_count.public
-  route_table_id = aws_route_table.mdm_public_rt.id
-  subnet_id      = aws_subnet.mdm_public_subnet[count.index].id
-}
-
-resource "aws_route_table" "mdm_private_rt" {
-  vpc_id = aws_vpc.mdm_vpc.id
-}
-
-resource "aws_route_table_association" "private" {
-  count          = var.subnet_count.private
-  route_table_id = aws_route_table.mdm_private_rt.id
-  subnet_id      = aws_subnet.mdm_private_subnet[count.index].id
+module "vpc_subnet"{
+  source              = "git::https://github.com/AnswerConsulting/AnswerKing-Infrastructure.git//Terraform_modules/vpc_subnets"
+  owner               = "Mauro"
+  project_name        = "mauro-data-mapper"
+  azs                 = [data.aws_availability_zones.available.names[0], data.aws_availability_zones.available.names[1]]
+  num_public_subnets  = 1
+  num_private_subnets = 2
 }
 
 resource "aws_eip" "mdm_eip" {
@@ -82,7 +28,7 @@ resource "aws_instance" "mdm_java" {
   count                  = 1
   ami                    = "ami-084e8c05825742534"
   instance_type          = "t2.large"
-  subnet_id              = aws_subnet.mdm_public_subnet[count.index].id
+  subnet_id              = module.vpc_subnet.public_subnet_ids[count.index]
   vpc_security_group_ids = [aws_security_group.mdm_api_sg.id]
   key_name               = var.ssh_key
 
@@ -153,7 +99,7 @@ resource "aws_rds_cluster" "postgres_cluster" {
 
 resource "aws_rds_cluster_instance" "postgres_primary_instance" {
   identifier         = "mdm-postgresdb-primary"
-  count = 1
+  count              = 1
   cluster_identifier = aws_rds_cluster.postgres_cluster.id
   instance_class     = "db.t3.medium"
   availability_zone  = var.az_west_a
@@ -164,7 +110,7 @@ resource "aws_rds_cluster_instance" "postgres_primary_instance" {
 }
 resource "aws_rds_cluster_instance" "postgres_secondary_instance" {
   identifier         = "mdm-postgresdb-secondary"
-  count = 1
+  count              = 1
   cluster_identifier = aws_rds_cluster.postgres_cluster.id
   instance_class     = "db.t3.medium"
   availability_zone  = var.az_west_b
@@ -177,7 +123,7 @@ resource "aws_rds_cluster_instance" "postgres_secondary_instance" {
 resource "aws_security_group" "mdm_api_sg" {
   name        = "mdm_api_sg"
   description = "Security group for tutorial web servers"
-  vpc_id      = aws_vpc.mdm_vpc.id
+  vpc_id      = module.vpc_subnet.vpc_id
 
   ingress {
     from_port   = var.http_server_port
@@ -209,7 +155,7 @@ resource "aws_security_group" "mdm_db_sg" {
   name        = "mdm_db_sg"
   description = "Security group for database"
 
-  vpc_id = aws_vpc.mdm_vpc.id
+  vpc_id = module.vpc_subnet.vpc_id
 
   ingress {
     description     = "Allow DB traffic from only the web sg"
@@ -228,6 +174,6 @@ resource "aws_security_group" "mdm_db_sg" {
 resource "aws_db_subnet_group" "mdm_db_subnet_group" {
   name        = "mdm_db_subnet_group"
   description = "DB subnet group"
-  subnet_ids  = [for subnet in aws_subnet.mdm_private_subnet : subnet.id]
+  subnet_ids  = [for subnet in module.vpc_subnet.private_subnet_ids : subnet]
 }
 
