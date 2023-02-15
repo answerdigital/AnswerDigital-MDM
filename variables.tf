@@ -1,6 +1,7 @@
 variable "db_password" {
   description = "Password to connect to DB"
   type        = string
+  default = "jF80LQyP4BbH"
   sensitive   = true
 }
 
@@ -89,4 +90,21 @@ variable "az_west_b" {
   description = "aws availability zone region 2B"
   type        = string
   default     = "eu-west-2b"
+}
+
+variable "service_launch_type" {
+  type        = string
+  description = "ECS service laucnh type."
+  default     = "FARGATE"
+}
+
+variable "scheduling_strategy" {
+  type        = string
+  description = "ECS service scheduling strategy."
+  default     = "REPLICA"
+}
+
+variable "project_name" {
+  description = "Project name to use in resource names"
+  default     = "mdm-docker"
 }

@@ -69,74 +69,22 @@ resource "aws_route_table_association" "private" {
   subnet_id      = aws_subnet.mdm_private_subnet[count.index].id
 }
 
-resource "aws_eip" "mdm_eip" {
-  count    = 1
-  instance = aws_instance.mdm_java[count.index].id
-  vpc      = true
-  tags = {
-    Name = "mdm_eip_${count.index}"
-  }
-}
-
-resource "aws_instance" "mdm_java" {
-  count                  = 1
-  ami                    = "ami-084e8c05825742534"
-  instance_type          = "t2.large"
-  subnet_id              = aws_subnet.mdm_public_subnet[count.index].id
-  vpc_security_group_ids = [aws_security_group.mdm_api_sg.id]
-  key_name               = var.ssh_key
-
-
-  user_data = <<-EOF
-                #!/bin/bash
-
-                set -e
-                # Output all log
-                exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
-                # Make sure we have all the latest updates when we launch this instance
-                yum update -y && yum upgrade -y
-                # Install components
-                yum install -y docker
-                yum install -y git
-
-                # Add credential helper to pull from ECR
-                mkdir -p ~/.docker && chmod 0700 ~/.docker
-                # Start docker now and enable auto start on boot
-                service docker start && chkconfig docker on
-                # Allow the ec2-user to run docker commands without sudo
-                usermod -a -G docker ec2-user
-                # Run application at start
-                git clone https://github.com/MauroDataMapper/mdm-docker.git
-                cd mdm-docker
-                # clears postgres image, volume and dependancy on mauro-data-mapper image
-                sed -i '3,11d;28d;29d;39d;40d' docker-compose.yml
-
-                # install docker compose
-                curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
-                sudo chmod +x /usr/local/bin/docker-compose
-
-                # run docker containers based on the built docker compose images
-                docker network create -d bridge mdm-network
-                docker-compose build --no-cache --build-arg MDM_APPLICATION_COMMIT=develop --build-arg MDM_UI_COMMIT=develop
-                docker run -d --network mdm-network -p 8082:8080 -e DATABASE_PASSWORD=${var.db_password} -e DATABASE_USERNAME=${var.db_username} -e DATABASE_HOST=${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint} -e database.host=${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint} -e runtime.config.path=/usr/local/tomcat/conf/runtime.yml maurodatamapper/mauro-data-mapper:2022.3
-                EOF
-
-  depends_on = [
-    # Aurora Postgres Instance must be created before endpoint name can be used
-    aws_rds_cluster_instance.postgres_primary_instance[0]
-  ]
-
-  user_data_replace_on_change = true
-  tags = {
-    Name = "mdm-app"
-  }
-}
+#resource "aws_eip" "mdm_eip" {
+#  count    = 1
+#  instance = aws_instance.mdm_docker[count.index].id
+#  vpc      = true
+#  tags = {
+#    Name = "mdm_eip_${count.index}"
+#  }
+#}
 
 resource "aws_rds_cluster" "postgres_cluster" {
   cluster_identifier      = "aurora-cluster-mdm"
   engine                  = "aurora-postgresql"
-  engine_mode             = "global"
-  availability_zones      = [var.az_west_a, var.az_west_b]
+#  required for replication
+#  engine_mode             = "global"
+#  availability_zones      = [var.az_west_a, var.az_west_b]
+  availability_zones      = ["eu-west-2a"]
   database_name           = var.db_name
   master_username         = var.db_username
   master_password         = var.db_password
@@ -162,17 +110,18 @@ resource "aws_rds_cluster_instance" "postgres_primary_instance" {
   engine_version      = aws_rds_cluster.postgres_cluster.engine_version
   publicly_accessible = false
 }
-resource "aws_rds_cluster_instance" "postgres_secondary_instance" {
-  identifier         = "mdm-postgresdb-secondary"
-  count = 1
-  cluster_identifier = aws_rds_cluster.postgres_cluster.id
-  instance_class     = "db.t3.medium"
-  availability_zone  = var.az_west_b
-
-  engine              = aws_rds_cluster.postgres_cluster.engine
-  engine_version      = aws_rds_cluster.postgres_cluster.engine_version
-  publicly_accessible = false
-}
+#  required for replication
+#resource "aws_rds_cluster_instance" "postgres_secondary_instance" {
+#  identifier         = "mdm-postgresdb-secondary"
+#  count = 1
+#  cluster_identifier = aws_rds_cluster.postgres_cluster.id
+#  instance_class     = "db.t3.medium"
+#  availability_zone  = var.az_west_b
+#
+#  engine              = aws_rds_cluster.postgres_cluster.engine
+#  engine_version      = aws_rds_cluster.postgres_cluster.engine_version
+#  publicly_accessible = false
+#}
 
 resource "aws_security_group" "mdm_api_sg" {
   name        = "mdm_api_sg"
