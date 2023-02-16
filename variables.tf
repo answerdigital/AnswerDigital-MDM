@@ -108,3 +108,8 @@ variable "project_name" {
   description = "Project name to use in resource names"
   default     = "mdm-docker"
 }
+variable "az_west_c" {
+  description = "aws availability zone region 2C"
+  type        = string
+  default     = "eu-west-2c"
+}

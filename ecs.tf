@@ -20,7 +20,7 @@ resource "aws_ecs_service" "mdm_docker" {
   }
   network_configuration {
     security_groups  = [aws_security_group.mdm_api_sg.id]
-    subnets          = [aws_subnet.mdm_public_subnet[0].id]
+    subnets          = [module.vpc_subnet.public_subnet_ids[0]]
     assign_public_ip = true
   }
 }

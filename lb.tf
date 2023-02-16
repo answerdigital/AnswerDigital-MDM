@@ -13,7 +13,7 @@ resource "aws_lb" "eip_lb" {
   ip_address_type    = "ipv4"
 
   subnet_mapping {
-    subnet_id     = aws_subnet.mdm_public_subnet[0].id
+    subnet_id     = module.vpc_subnet.public_subnet_ids[0]
     allocation_id = aws_eip.lb.id
   }
 
@@ -27,7 +27,7 @@ resource "aws_lb_target_group" "eip_target" {
   port        = var.http_server_port
   protocol    = "TCP"
   target_type = "ip"
-  vpc_id      = aws_vpc.mdm_vpc.id
+  vpc_id      = module.vpc_subnet.vpc_id
 
   tags = {
     Name = "${var.project_name}-lb-target-group"
