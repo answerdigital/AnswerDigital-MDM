@@ -16,7 +16,7 @@ resource "aws_ecs_service" "mdm_docker" {
   load_balancer {
     target_group_arn = aws_lb_target_group.eip_target.arn
     container_name   = "${var.project_name}-container"
-    container_port   = 8082
+    container_port   = var.http_server_port
   }
   network_configuration {
     security_groups  = [aws_security_group.mdm_api_sg.id]
@@ -39,11 +39,10 @@ resource "aws_ecs_task_definition" "task_definition" {
       cpu          = 2048
       memory       = 4096
       essential    = true
-      networkMode  = "awsvpc"
       portMappings = [
         {
-          containerPort = 8082
-          hostPort      = 8082
+          containerPort = var.http_server_port
+          hostPort      = var.http_server_port
         }
       ]
       logConfiguration = {
@@ -65,11 +64,11 @@ resource "aws_ecs_task_definition" "task_definition" {
         },
         {
           "name" : "DATABASE_HOST",
-          "value" : "${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint}"
+          "value" : aws_rds_cluster_instance.postgres_primary_instance[0].endpoint
         },
         {
           "name" : "database.host",
-          "value" : "mdm-postgresdb-primary.ce5zstiyqlhf.eu-west-2.rds.amazonaws.com"
+          "value" : aws_rds_cluster_instance.postgres_primary_instance[0].endpoint
         },
         {
           "name" : "runtime.config.path",
@@ -82,4 +81,64 @@ resource "aws_ecs_task_definition" "task_definition" {
   tags = {
     Name = "${var.project_name}-task-definition"
   }
+}
+
+resource "aws_appautoscaling_policy" "memory_scaling_policy" {
+  name               = "memory-scaling-policy"
+  policy_type        = "StepScaling"
+  resource_id        = "service/${aws_ecs_service.mdm_docker.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "PercentChangeInCapacity"
+    cooldown                = 300
+    metric_aggregation_type = "Average"
+
+    step_adjustment {
+      metric_interval_lower_bound = "0"
+      scaling_adjustment          = "1"
+    }
+
+    step_adjustment {
+      metric_interval_upper_bound = "50"
+      metric_interval_lower_bound = "0"
+      scaling_adjustment          = "1"
+    }
+
+    step_adjustment {
+      metric_interval_upper_bound = "70"
+      metric_interval_lower_bound = "50"
+      scaling_adjustment          = "2"
+    }
+
+    step_adjustment {
+      metric_interval_upper_bound = "-1"
+      metric_interval_lower_bound = "70"
+      scaling_adjustment          = "3"
+    }
+  }
+  service_namespace = ""
+}
+
+resource "aws_cloudwatch_metric_alarm" "memory_utilization_alarm" {
+  alarm_name          = "ecs-memory-utilization-alarm"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "MemoryUtilization"
+  namespace           = "AWS/ECS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 70
+  alarm_description   = "This metric monitors the memory utilization of the ECS service."
+  alarm_actions       = [aws_appautoscaling_policy.memory_scaling_policy.arn]
+
+  dimensions = {
+    ServiceName = aws_ecs_service.mdm_docker.name
+    ClusterName = aws_ecs_cluster.mdm_docker.name
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_cloudwatch_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess"
+  role       = aws_iam_role.ecs_task_execution_role.name
 }

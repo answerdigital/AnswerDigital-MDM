@@ -23,7 +23,7 @@ variable "db_port" {
 }
 
 variable "http_server_port" {
-  default = 8082
+  default = 8080
 }
 
 variable "ssh_server_port" {

@@ -69,22 +69,11 @@ resource "aws_route_table_association" "private" {
   subnet_id      = aws_subnet.mdm_private_subnet[count.index].id
 }
 
-#resource "aws_eip" "mdm_eip" {
-#  count    = 1
-#  instance = aws_instance.mdm_docker[count.index].id
-#  vpc      = true
-#  tags = {
-#    Name = "mdm_eip_${count.index}"
-#  }
-#}
-
 resource "aws_rds_cluster" "postgres_cluster" {
   cluster_identifier      = "aurora-cluster-mdm"
   engine                  = "aurora-postgresql"
-#  required for replication
-#  engine_mode             = "global"
-#  availability_zones      = [var.az_west_a, var.az_west_b]
-  availability_zones      = ["eu-west-2a"]
+  engine_mode             = "global"
+  availability_zones      = [var.az_west_a, var.az_west_b]
   database_name           = var.db_name
   master_username         = var.db_username
   master_password         = var.db_password
@@ -110,18 +99,17 @@ resource "aws_rds_cluster_instance" "postgres_primary_instance" {
   engine_version      = aws_rds_cluster.postgres_cluster.engine_version
   publicly_accessible = false
 }
-#  required for replication
-#resource "aws_rds_cluster_instance" "postgres_secondary_instance" {
-#  identifier         = "mdm-postgresdb-secondary"
-#  count = 1
-#  cluster_identifier = aws_rds_cluster.postgres_cluster.id
-#  instance_class     = "db.t3.medium"
-#  availability_zone  = var.az_west_b
-#
-#  engine              = aws_rds_cluster.postgres_cluster.engine
-#  engine_version      = aws_rds_cluster.postgres_cluster.engine_version
-#  publicly_accessible = false
-#}
+resource "aws_rds_cluster_instance" "postgres_secondary_instance" {
+  identifier         = "mdm-postgresdb-secondary"
+  count = 1
+  cluster_identifier = aws_rds_cluster.postgres_cluster.id
+  instance_class     = "db.t3.medium"
+  availability_zone  = var.az_west_b
+
+  engine              = aws_rds_cluster.postgres_cluster.engine
+  engine_version      = aws_rds_cluster.postgres_cluster.engine_version
+  publicly_accessible = false
+}
 
 resource "aws_security_group" "mdm_api_sg" {
   name        = "mdm_api_sg"

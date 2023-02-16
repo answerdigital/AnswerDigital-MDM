@@ -2,7 +2,7 @@ resource "aws_eip" "lb" {
   vpc = true
 
   tags = {
-    Name  = "${var.project_name}-eip"
+    Name = "${var.project_name}-eip"
   }
 }
 
@@ -18,25 +18,25 @@ resource "aws_lb" "eip_lb" {
   }
 
   tags = {
-    Name  = "${var.project_name}-lb"
+    Name = "${var.project_name}-lb"
   }
 }
 
 resource "aws_lb_target_group" "eip_target" {
   name        = "tf-example-lb-tg"
-  port        = 8082
+  port        = var.http_server_port
   protocol    = "TCP"
   target_type = "ip"
   vpc_id      = aws_vpc.mdm_vpc.id
 
   tags = {
-    Name  = "${var.project_name}-lb-target-group"
+    Name = "${var.project_name}-lb-target-group"
   }
 }
 
 resource "aws_lb_listener" "eip_listener" {
   load_balancer_arn = aws_lb.eip_lb.arn
-  port              = 8082
+  port              = var.http_server_port
   protocol          = "TCP"
 
 
@@ -46,6 +46,6 @@ resource "aws_lb_listener" "eip_listener" {
   }
 
   tags = {
-    Name  = "${var.project_name}-lb-listener"
+    Name = "${var.project_name}-lb-listener"
   }
 }
