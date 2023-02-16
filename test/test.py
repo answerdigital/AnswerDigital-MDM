@@ -1,13 +1,23 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 from playwright.sync_api import Page
 import requests
 import json
 import os
+import boto3
 
-url = os.getenv('MDM_INSTANCE_BASE_URL', 'http://localhost:8082/')
+ec2_client = boto3.client('ec2')
+instance_name = 'mdm-app'
+
+response = ec2_client.describe_instances(
+    Filters=[
+        {
+            'Name': 'tag:Name',
+            'Values': [instance_name]
+        }
+    ]
+)
+
+public_ip = response['Reservations'][0]['Instances'][0]['PublicIpAddress']
+url = os.getenv('MDM_INSTANCE_BASE_URL', public_ip)
 
 
 def test_login(page: Page):
