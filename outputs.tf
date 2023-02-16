@@ -15,11 +15,6 @@ output "database_endpoint" {
   value       = aws_rds_cluster_instance.postgres_primary_instance[0].endpoint
 }
 
-output "database_is_writable" {
-  description = "Whether the database is writable"
-  value       = aws_rds_cluster_instance.postgres_primary_instance[0].writer
-}
-
 output "secondary_database_endpoint" {
   description = "The endpoint of secondary database"
   value       = aws_rds_cluster_instance.postgres_secondary_instance[0].endpoint
