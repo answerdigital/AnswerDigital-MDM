@@ -6,7 +6,7 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
-module "vpc_subnet"{
+module "vpc_subnet" {
   source              = "git::https://github.com/AnswerConsulting/AnswerKing-Infrastructure.git//Terraform_modules/vpc_subnets"
   owner               = "Mauro"
   project_name        = "mauro-data-mapper"
@@ -19,7 +19,7 @@ resource "aws_eip" "mdm_eip" {
   count    = 1
   instance = aws_instance.mdm_java[count.index].id
   vpc      = true
-  tags = {
+  tags     = {
     Name = "mdm_eip_${count.index}"
   }
 }
@@ -52,7 +52,7 @@ resource "aws_instance" "mdm_java" {
                 # Allow the ec2-user to run docker commands without sudo
                 usermod -a -G docker ec2-user
                 # Run application at start
-                git clone https://github.com/MauroDataMapper/mdm-docker.git
+                git clone -b develop https://github.com/MauroDataMapper/mdm-docker.git
                 cd mdm-docker
                 # clears postgres image, volume and dependancy on mauro-data-mapper image
                 sed -i '3,11d;28d;29d;39d;40d' docker-compose.yml
@@ -73,7 +73,7 @@ resource "aws_instance" "mdm_java" {
   ]
 
   user_data_replace_on_change = true
-  tags = {
+  tags                        = {
     Name = "mdm-app"
   }
 }
@@ -81,8 +81,8 @@ resource "aws_instance" "mdm_java" {
 resource "aws_rds_cluster" "postgres_cluster" {
   cluster_identifier      = "aurora-cluster-mdm"
   engine                  = "aurora-postgresql"
-  engine_mode             = "global"
-  availability_zones      = [var.az_west_a, var.az_west_b]
+  engine_mode             = "provisioned"
+  availability_zones      = [var.az_west_a, "eu-west-2b", "eu-west-2c"]
   database_name           = var.db_name
   master_username         = var.db_username
   master_password         = var.db_password
@@ -104,19 +104,26 @@ resource "aws_rds_cluster_instance" "postgres_primary_instance" {
   instance_class     = "db.t3.medium"
   availability_zone  = var.az_west_a
 
-  engine              = aws_rds_cluster.postgres_cluster.engine
-  engine_version      = aws_rds_cluster.postgres_cluster.engine_version
+
+  engine         = aws_rds_cluster.postgres_cluster.engine
+  engine_version = aws_rds_cluster.postgres_cluster.engine_version
+
+  preferred_backup_window      = "07:00-09:00"
+  preferred_maintenance_window = "sun:04:00-sun:05:00"
+
   publicly_accessible = false
 }
 resource "aws_rds_cluster_instance" "postgres_secondary_instance" {
+  depends_on         = [aws_rds_cluster_instance.postgres_primary_instance]
   identifier         = "mdm-postgresdb-secondary"
   count              = 1
   cluster_identifier = aws_rds_cluster.postgres_cluster.id
   instance_class     = "db.t3.medium"
   availability_zone  = var.az_west_b
 
-  engine              = aws_rds_cluster.postgres_cluster.engine
-  engine_version      = aws_rds_cluster.postgres_cluster.engine_version
+  engine         = aws_rds_cluster.postgres_cluster.engine
+  engine_version = aws_rds_cluster.postgres_cluster.engine_version
+
   publicly_accessible = false
 }
 
