@@ -82,7 +82,7 @@ resource "aws_rds_cluster" "postgres_cluster" {
   cluster_identifier      = "aurora-cluster-mdm"
   engine                  = "aurora-postgresql"
   engine_mode             = "provisioned"
-  availability_zones      = [var.az_west_a, "eu-west-2b", "eu-west-2c"]
+  availability_zones      = [var.az_west_a, var.az_west_b, var.az_west_c]
   database_name           = var.db_name
   master_username         = var.db_username
   master_password         = var.db_password

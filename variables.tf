@@ -90,3 +90,9 @@ variable "az_west_b" {
   type        = string
   default     = "eu-west-2b"
 }
+
+variable "az_west_c" {
+  description = "aws availability zone region 2C"
+  type        = string
+  default     = "eu-west-2c"
+}
