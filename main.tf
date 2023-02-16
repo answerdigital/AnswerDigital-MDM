@@ -10,9 +10,9 @@ module "vpc_subnet" {
   source              = "git::https://github.com/AnswerConsulting/AnswerKing-Infrastructure.git//Terraform_modules/vpc_subnets"
   owner               = "Mauro"
   project_name        = "mauro-data-mapper"
-  azs                 = [data.aws_availability_zones.available.names[0], data.aws_availability_zones.available.names[1]]
+  azs                 = [data.aws_availability_zones.available.names[0], data.aws_availability_zones.available.names[1], data.aws_availability_zones.available.names[2]]
   num_public_subnets  = 1
-  num_private_subnets = 2
+  num_private_subnets = 3
 }
 
 resource "aws_eip" "mdm_eip" {
@@ -108,7 +108,6 @@ resource "aws_rds_cluster_instance" "postgres_primary_instance" {
   engine         = aws_rds_cluster.postgres_cluster.engine
   engine_version = aws_rds_cluster.postgres_cluster.engine_version
 
-  preferred_backup_window      = "07:00-09:00"
   preferred_maintenance_window = "sun:04:00-sun:05:00"
 
   publicly_accessible = false
