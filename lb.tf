@@ -23,7 +23,7 @@ resource "aws_lb" "eip_lb" {
 }
 
 resource "aws_lb_target_group" "eip_target" {
-  name        = "tf-example-lb-tg"
+  name        = "mdm-lb-target-group"
   port        = var.http_server_port
   protocol    = "TCP"
   target_type = "ip"
