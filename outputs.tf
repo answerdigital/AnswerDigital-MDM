@@ -1,9 +1,3 @@
-#output "public_ip" {
-#  description = "The public IP address of the web server"
-#  value       = aws_eip.mdm_eip[0].public_ip
-#  depends_on  = [aws_eip.mdm_eip]
-#}
-
 output "web_public_dns" {
   description = "The public DNS address of the web server"
   value       = aws_lb.eip_lb.dns_name
