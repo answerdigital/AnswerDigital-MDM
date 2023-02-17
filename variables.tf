@@ -78,3 +78,37 @@ variable "ssh_key" {
   type        = string
   default     = "mdm-dev"
 }
+
+variable "az_west_a" {
+  description = "aws availability zone region 2A"
+  type        = string
+  default     = "eu-west-2a"
+}
+
+variable "az_west_b" {
+  description = "aws availability zone region 2B"
+  type        = string
+  default     = "eu-west-2b"
+}
+
+variable "service_launch_type" {
+  type        = string
+  description = "ECS service laucnh type."
+  default     = "FARGATE"
+}
+
+variable "scheduling_strategy" {
+  type        = string
+  description = "ECS service scheduling strategy."
+  default     = "REPLICA"
+}
+
+variable "project_name" {
+  description = "Project name to use in resource names"
+  default     = "mdm-docker"
+}
+variable "az_west_c" {
+  description = "aws availability zone region 2C"
+  type        = string
+  default     = "eu-west-2c"
+}
