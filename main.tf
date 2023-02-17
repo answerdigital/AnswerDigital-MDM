@@ -7,13 +7,46 @@ data "aws_availability_zones" "available" {
 }
 
 module "vpc_subnet" {
-  source              = "git::https://github.com/AnswerConsulting/AnswerKing-Infrastructure.git//Terraform_modules/vpc_subnets"
-  owner               = "Mauro"
-  project_name        = "mauro-data-mapper"
-  azs                 = [data.aws_availability_zones.available.names[0], data.aws_availability_zones.available.names[1]]
-  num_public_subnets  = 1
-  num_private_subnets = 3
+  source               = "git::https://github.com/AnswerConsulting/AnswerKing-Infrastructure.git//Terraform_modules/vpc_subnets"
+  owner                = "Mauro"
+  project_name         = "mauro-data-mapper"
+  azs                  = [
+    data.aws_availability_zones.available.names[0], data.aws_availability_zones.available.names[1],
+    data.aws_availability_zones.available.names[2]
+  ]
+  num_public_subnets   = 1
+  num_private_subnets  = 3
   enable_vpc_flow_logs = false
+}
+
+resource "aws_elb" "mdm_elb" {
+  name            = "mdm-elb"
+  security_groups = [aws_security_group.mdm_api_sg.id]
+  subnets         = [module.vpc_subnet.public_subnet_ids[0]]
+
+  listener {
+    instance_port     = var.http_server_port
+    instance_protocol = "http"
+    lb_port           = var.http_server_port
+    lb_protocol       = "http"
+  }
+  health_check {
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 3
+    target              = "HTTP:${var.http_server_port}/"
+    interval            = 30
+  }
+
+  instances                   = [aws_instance.mdm_app1[0].id, aws_instance.mdm_app2[0].id]
+  cross_zone_load_balancing   = true
+  idle_timeout                = 400
+  connection_draining         = true
+  connection_draining_timeout = 400
+
+  tags = {
+    Name = "mdm-elb"
+  }
 }
 
 resource "aws_rds_cluster" "postgres_cluster" {
@@ -37,15 +70,14 @@ resource "aws_rds_cluster" "postgres_cluster" {
 
 resource "aws_rds_cluster_instance" "postgres_primary_instance" {
   identifier         = "mdm-postgresdb-primary"
-  count = 1
+  count              = 1
   cluster_identifier = aws_rds_cluster.postgres_cluster.id
   instance_class     = "db.t3.medium"
   availability_zone  = var.az_west_a
 
 
-  engine              = aws_rds_cluster.postgres_cluster.engine
-  engine_version      = aws_rds_cluster.postgres_cluster.engine_version
-
+  engine                       = aws_rds_cluster.postgres_cluster.engine
+  engine_version               = aws_rds_cluster.postgres_cluster.engine_version
   preferred_maintenance_window = "sun:04:00-sun:05:00"
 
   publicly_accessible = false
@@ -53,13 +85,13 @@ resource "aws_rds_cluster_instance" "postgres_primary_instance" {
 resource "aws_rds_cluster_instance" "postgres_secondary_instance" {
   depends_on         = [aws_rds_cluster_instance.postgres_primary_instance]
   identifier         = "mdm-postgresdb-secondary"
-  count = 1
+  count              = 1
   cluster_identifier = aws_rds_cluster.postgres_cluster.id
   instance_class     = "db.t3.medium"
   availability_zone  = var.az_west_b
 
-  engine              = aws_rds_cluster.postgres_cluster.engine
-  engine_version      = aws_rds_cluster.postgres_cluster.engine_version
+  engine         = aws_rds_cluster.postgres_cluster.engine
+  engine_version = aws_rds_cluster.postgres_cluster.engine_version
 
   publicly_accessible = false
 }

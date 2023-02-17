@@ -91,6 +91,12 @@ variable "az_west_b" {
   default     = "eu-west-2b"
 }
 
+variable "az_west_c" {
+  description = "aws availability zone region 2C"
+  type        = string
+  default     = "eu-west-2c"
+}
+
 variable "service_launch_type" {
   type        = string
   description = "ECS service laucnh type."
@@ -106,9 +112,4 @@ variable "scheduling_strategy" {
 variable "project_name" {
   description = "Project name to use in resource names"
   default     = "mdm-docker"
-}
-variable "az_west_c" {
-  description = "aws availability zone region 2C"
-  type        = string
-  default     = "eu-west-2c"
 }
