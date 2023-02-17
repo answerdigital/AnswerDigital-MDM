@@ -10,7 +10,7 @@ module "vpc_subnet" {
   source              = "git::https://github.com/AnswerConsulting/AnswerKing-Infrastructure.git//Terraform_modules/vpc_subnets"
   owner               = "Mauro"
   project_name        = "mauro-data-mapper"
-  azs                 = [data.aws_availability_zones.available.names[0], data.aws_availability_zones.available.names[1]]
+  azs                 = [data.aws_availability_zones.available.names[0], data.aws_availability_zones.available.names[1], data.aws_availability_zones.available.names[2]]
   num_public_subnets  = 1
   num_private_subnets = 3
   enable_vpc_flow_logs  = true
