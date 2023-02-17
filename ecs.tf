@@ -16,7 +16,7 @@ resource "aws_ecs_service" "mdm_docker" {
   load_balancer {
     target_group_arn = aws_lb_target_group.eip_target.arn
     container_name   = "${var.project_name}-container"
-    container_port   = var.http_server_port
+    container_port   = 8080
   }
   network_configuration {
     security_groups  = [aws_security_group.mdm_api_sg.id]
@@ -41,8 +41,8 @@ resource "aws_ecs_task_definition" "task_definition" {
       essential    = true
       portMappings = [
         {
-          containerPort = var.http_server_port
-          hostPort      = var.http_server_port
+          containerPort = 8080
+          hostPort      = 8080
         }
       ]
       logConfiguration = {

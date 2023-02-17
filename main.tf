@@ -16,16 +16,6 @@ module "vpc_subnet" {
   enable_vpc_flow_logs = false
 }
 
-#TODO only needed for EC2?
-#resource "aws_eip" "mdm_eip" {
-#  count    = 1
-#  instance = aws_instance.mdm_java[count.index].id
-#  vpc      = true
-#  tags     = {
-#    Name = "mdm_eip_${count.index}"
-#  }
-#}
-
 resource "aws_rds_cluster" "postgres_cluster" {
   cluster_identifier      = "aurora-cluster-mdm"
   engine                  = "aurora-postgresql"
@@ -82,7 +72,7 @@ resource "aws_security_group" "mdm_api_sg" {
   ingress {
     from_port   = var.http_server_port
     protocol    = "tcp"
-    to_port     = 8082
+    to_port     = var.http_server_port
     cidr_blocks = ["0.0.0.0/0"]
   }
 

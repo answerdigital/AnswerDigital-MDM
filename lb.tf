@@ -24,7 +24,7 @@ resource "aws_lb" "eip_lb" {
 
 resource "aws_lb_target_group" "eip_target" {
   name        = "tf-example-lb-tg"
-  port        = 8082
+  port        = var.http_server_port
   protocol    = "TCP"
   target_type = "ip"
   vpc_id      = module.vpc_subnet.vpc_id
@@ -36,7 +36,7 @@ resource "aws_lb_target_group" "eip_target" {
 
 resource "aws_lb_listener" "eip_listener" {
   load_balancer_arn = aws_lb.eip_lb.arn
-  port              = 8082
+  port              = var.http_server_port
   protocol          = "TCP"
 
 
