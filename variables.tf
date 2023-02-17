@@ -25,6 +25,10 @@ variable "http_server_port" {
   default = 8082
 }
 
+variable "container_internal_port" {
+  default = 8080
+}
+
 variable "ssh_server_port" {
   default = 22
 }
@@ -112,4 +116,10 @@ variable "scheduling_strategy" {
 variable "project_name" {
   description = "Project name to use in resource names"
   default     = "mdm-docker"
+}
+
+variable "network_protocol" {
+  type        = string
+  description = "network protocol type"
+  default     = "tcp"
 }

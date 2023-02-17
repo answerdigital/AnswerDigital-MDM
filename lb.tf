@@ -6,46 +6,43 @@ resource "aws_eip" "lb" {
   }
 }
 
-resource "aws_lb" "eip_lb" {
+resource "aws_alb" "eip_lb" {
   name               = "${var.project_name}-lb"
-  load_balancer_type = "network"
   internal           = false
-  ip_address_type    = "ipv4"
-
-  subnet_mapping {
-    subnet_id     = module.vpc_subnet.public_subnet_ids[0]
-    allocation_id = aws_eip.lb.id
-  }
+  load_balancer_type = "application"
+  subnets            = [module.vpc_subnet.public_subnet_ids[0]]
+  security_groups    = [aws_security_group.mdm_api_sg.id]
 
   tags = {
     Name = "${var.project_name}-lb"
   }
 }
 
-resource "aws_lb_target_group" "eip_target" {
-  name        = "mdm-lb-target-group"
-  port        = var.http_server_port
-  protocol    = "TCP"
-  target_type = "ip"
-  vpc_id      = module.vpc_subnet.vpc_id
-
-  tags = {
-    Name = "${var.project_name}-lb-target-group"
+resource "aws_alb_target_group" "eip_target" {
+  name_prefix      = "mdm-tg"
+  port             = var.container_internal_port
+  protocol         = "HTTP"
+  vpc_id           = module.vpc_subnet.public_subnet_ids[0]
+  target_type      = "ip"
+  health_check {
+    interval            = 30
+    path                = "/health"
+    port                = "traffic-port"
+    protocol            = "HTTP"
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 5
+    matcher             = "200"
   }
 }
 
-resource "aws_lb_listener" "eip_listener" {
-  load_balancer_arn = aws_lb.eip_lb.arn
+resource "aws_alb_listener" "eip_listener" {
+  load_balancer_arn = aws_alb.eip_lb.arn
   port              = var.http_server_port
-  protocol          = "TCP"
-
+  protocol          = "HTTP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.eip_target.arn
-  }
-
-  tags = {
-    Name = "${var.project_name}-lb-listener"
+    target_group_arn = aws_alb_target_group.eip_target.arn
   }
 }
