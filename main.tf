@@ -19,36 +19,6 @@ module "vpc_subnet" {
   enable_vpc_flow_logs = false
 }
 
-resource "aws_elb" "mdm_elb" {
-  name            = "mdm-elb"
-  security_groups = [aws_security_group.mdm_api_sg.id]
-  subnets         = [module.vpc_subnet.public_subnet_ids[0]]
-
-  listener {
-    instance_port     = var.http_server_port
-    instance_protocol = "http"
-    lb_port           = var.http_server_port
-    lb_protocol       = "http"
-  }
-  health_check {
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    timeout             = 3
-    target              = "HTTP:${var.http_server_port}/"
-    interval            = 30
-  }
-
-  instances                   = [aws_instance.mdm_app1[0].id, aws_instance.mdm_app2[0].id]
-  cross_zone_load_balancing   = true
-  idle_timeout                = 400
-  connection_draining         = true
-  connection_draining_timeout = 400
-
-  tags = {
-    Name = "mdm-elb"
-  }
-}
-
 resource "aws_rds_cluster" "postgres_cluster" {
   cluster_identifier      = "aurora-cluster-mdm"
   engine                  = "aurora-postgresql"
@@ -103,7 +73,7 @@ resource "aws_security_group" "mdm_api_sg" {
 
   ingress {
     from_port   = var.http_server_port
-    protocol    = "tcp"
+    protocol    = var.network_protocol
     to_port     = var.http_server_port
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -111,7 +81,7 @@ resource "aws_security_group" "mdm_api_sg" {
   ingress {
     from_port   = var.ssh_server_port
     to_port     = var.ssh_server_port
-    protocol    = "tcp"
+    protocol    = var.network_protocol
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -136,7 +106,7 @@ resource "aws_security_group" "mdm_db_sg" {
   ingress {
     description     = "Allow DB traffic from only the web sg"
     from_port       = var.db_port
-    protocol        = "tcp"
+    protocol        = var.network_protocol
     to_port         = var.db_port
     security_groups = [aws_security_group.mdm_api_sg.id]
   }
