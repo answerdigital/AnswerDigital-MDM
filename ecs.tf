@@ -83,11 +83,20 @@ resource "aws_ecs_task_definition" "task_definition" {
   }
 }
 
+resource "aws_appautoscaling_target" "mdm_docker_target" {
+  max_capacity       = 10
+  min_capacity       = 1
+  resource_id        = "service/mdm_docker/${aws_ecs_service.mdm_docker.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
 resource "aws_appautoscaling_policy" "memory_scaling_policy" {
   name               = "memory-scaling-policy"
   policy_type        = "StepScaling"
-  resource_id        = "service/${aws_ecs_service.mdm_docker.name}"
-  scalable_dimension = "ecs:service:DesiredCount"
+  resource_id        = aws_appautoscaling_target.mdm_docker_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.mdm_docker_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.mdm_docker_target.service_namespace
 
   step_scaling_policy_configuration {
     adjustment_type         = "PercentChangeInCapacity"
@@ -95,29 +104,15 @@ resource "aws_appautoscaling_policy" "memory_scaling_policy" {
     metric_aggregation_type = "Average"
 
     step_adjustment {
-      metric_interval_lower_bound = "0"
-      scaling_adjustment          = "1"
-    }
-
-    step_adjustment {
       metric_interval_upper_bound = "50"
-      metric_interval_lower_bound = "0"
-      scaling_adjustment          = "1"
+      scaling_adjustment          = "-1"
     }
 
     step_adjustment {
-      metric_interval_upper_bound = "70"
       metric_interval_lower_bound = "50"
-      scaling_adjustment          = "2"
-    }
-
-    step_adjustment {
-      metric_interval_upper_bound = "-1"
-      metric_interval_lower_bound = "70"
-      scaling_adjustment          = "3"
+      scaling_adjustment          = "1"
     }
   }
-  service_namespace = ""
 }
 
 resource "aws_cloudwatch_metric_alarm" "memory_utilization_alarm" {
@@ -142,3 +137,4 @@ resource "aws_iam_role_policy_attachment" "ecs_cloudwatch_policy" {
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess"
   role       = aws_iam_role.ecs_task_execution_role.name
 }
+

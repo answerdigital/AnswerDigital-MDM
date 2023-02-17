@@ -12,7 +12,7 @@ module "vpc_subnet" {
   project_name        = "mauro-data-mapper"
   azs                 = [data.aws_availability_zones.available.names[0], data.aws_availability_zones.available.names[1]]
   num_public_subnets  = 1
-  num_private_subnets = 2
+  num_private_subnets = 3
   enable_vpc_flow_logs = false
 }
 
@@ -56,7 +56,6 @@ resource "aws_rds_cluster_instance" "postgres_primary_instance" {
   engine              = aws_rds_cluster.postgres_cluster.engine
   engine_version      = aws_rds_cluster.postgres_cluster.engine_version
 
-  preferred_backup_window      = "07:00-09:00"
   preferred_maintenance_window = "sun:04:00-sun:05:00"
 
   publicly_accessible = false
@@ -83,7 +82,7 @@ resource "aws_security_group" "mdm_api_sg" {
   ingress {
     from_port   = var.http_server_port
     protocol    = "tcp"
-    to_port     = var.http_server_port
+    to_port     = 8082
     cidr_blocks = ["0.0.0.0/0"]
   }
 
