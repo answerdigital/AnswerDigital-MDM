@@ -1,7 +1,6 @@
 variable "db_password" {
   description = "Password to connect to DB"
   type        = string
-  default = "jF80LQyP4BbH"
   sensitive   = true
 }
 
