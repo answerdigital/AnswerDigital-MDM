@@ -11,38 +11,64 @@ module "vpc_subnet" {
   owner               = "Mauro"
   project_name        = "mauro-data-mapper"
   azs                 = [data.aws_availability_zones.available.names[0], data.aws_availability_zones.available.names[1]]
-  num_public_subnets  = 1
+  num_public_subnets  = 2
   num_private_subnets = 3
   enable_vpc_flow_logs  = true
 }
 
-resource "aws_elb" "mdm_elb" {
-  name = "mdm-elb"
-  security_groups = [aws_security_group.mdm_api_sg.id]
-  subnets = [module.vpc_subnet.public_subnet_ids[0]]
+resource "aws_lb_target_group" "mdm_target_group" {
+  name = "mdm-app-front"
+  port = var.http_server_port
+  protocol = var.http_protocol
+  vpc_id = module.vpc_subnet.vpc_id
 
-  listener {
-    instance_port = var.http_server_port
-    instance_protocol = "http"
-    lb_port = var.http_server_port
-    lb_protocol = "http"
-  }
   health_check {
-    healthy_threshold = 2
-    unhealthy_threshold = 2
+    enabled = true
+    healthy_threshold = 3
+    interval = 10
+    matcher = 200
+    path  = "/"
+    port  = "traffic-port"
+    protocol = var.http_protocol
     timeout = 3
-    target = "HTTP:${var.http_server_port}/"
-    interval = 30
+    unhealthy_threshold = 2
   }
+}
 
-  instances = [aws_instance.mdm_app1[0].id, aws_instance.mdm_app2[0].id]
-  cross_zone_load_balancing = true
-  idle_timeout = 400
-  connection_draining = true
-  connection_draining_timeout = 400
+resource "aws_lb_target_group_attachment" "attach-app1" {
+  target_group_arn = aws_lb_target_group.mdm_target_group.arn
+  target_id        = aws_instance.mdm_app1[0].id
+  port  = var.http_server_port
+}
+
+resource "aws_lb_target_group_attachment" "attach-app2" {
+  target_group_arn = aws_lb_target_group.mdm_target_group.arn
+  target_id        = aws_instance.mdm_app2[0].id
+  port  = var.http_server_port
+}
+
+resource "aws_lb" "mdm_lb" {
+  name = "mdm-app-lb"
+  internal = false
+  load_balancer_type = "application"
+  security_groups = [aws_security_group.mdm_api_sg.id]
+  subnets = [module.vpc_subnet.public_subnet_ids[0], module.vpc_subnet.public_subnet_ids[1]]
+
+  enable_deletion_protection = true
 
   tags = {
-    Name = "mdm-elb"
+    Name = "mdm-app-lb"
+  }
+}
+
+resource "aws_lb_listener" "mdm_lb_listener" {
+  load_balancer_arn = aws_lb.mdm_lb.arn
+  port  = var.http_server_port
+  protocol = var.http_protocol
+
+  default_action {
+    type = "forward"
+    target_group_arn = aws_lb_target_group.mdm_target_group.arn
   }
 }
 
@@ -221,6 +247,13 @@ resource "aws_security_group" "mdm_api_sg" {
   ingress {
     from_port   = var.ssh_server_port
     to_port     = var.ssh_server_port
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = var.https_server_port
+    to_port     = var.https_server_port
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }

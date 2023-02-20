@@ -25,6 +25,18 @@ variable "http_server_port" {
   default = 8082
 }
 
+variable "https_server_port" {
+  default = 443
+}
+
+variable "http_protocol" {
+  default = "HTTP"
+}
+
+variable "https_protocol" {
+  default = "HTTPS"
+}
+
 variable "ssh_server_port" {
   default = 22
 }
@@ -96,3 +108,5 @@ variable "az_west_c" {
   type        = string
   default     = "eu-west-2c"
 }
+
+variable "certificate_arn" {}

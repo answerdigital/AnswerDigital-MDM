@@ -14,6 +14,6 @@ output "database_port" {
   value       = aws_rds_cluster.postgres_cluster.port
 }
 
-output "mdm-elb-dns" {
-  value = aws_elb.mdm_elb.dns_name
+output "mdm-alb-dns" {
+  value = aws_lb.mdm_lb.dns_name
 }
