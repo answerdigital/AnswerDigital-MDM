@@ -67,7 +67,26 @@ resource "aws_lb_listener" "mdm_lb_listener" {
   protocol = var.http_protocol
 
   default_action {
-    type = "forward"
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+
+    }
+  }
+}
+
+resource "aws_lb_listener" "mdm_lb_listener2" {
+  load_balancer_arn = aws_lb.mdm_lb.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = var.certificate_arn
+
+  default_action {
+    type             = "forward"
     target_group_arn = aws_lb_target_group.mdm_target_group.arn
   }
 }
@@ -112,7 +131,7 @@ resource "aws_instance" "mdm_app1" {
 
                 # run docker containers based on the built docker compose images
                 docker network create -d bridge mdm-network
-                docker-compose build --no-cache --progress=plain --build-arg MDM_APPLICATION_COMMIT=develop --build-arg MDM_UI_COMMIT=develop
+                docker-compose build --no-cache --progress=plain --build-arg MDM_APPLICATION_COMMIT=develop --build-arg MDM_UI_COMMIT=develop --build-arg MDM_UI_THEME_NAME="nhs-digital"
                 docker run -d --network mdm-network -p ${var.http_server_port}:8080 -e DATABASE_PASSWORD=${var.db_password} -e DATABASE_USERNAME=${var.db_username} -e DATABASE_HOST=${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint} -e database.host=${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint} -e runtime.config.path=/usr/local/tomcat/conf/runtime.yml maurodatamapper/mauro-data-mapper:2022.3
 
                 EOF
@@ -169,7 +188,7 @@ resource "aws_instance" "mdm_app2" {
 
                 # run docker containers based on the built docker compose images
                 docker network create -d bridge mdm-network
-                docker-compose build --no-cache --progress=plain --build-arg MDM_APPLICATION_COMMIT=develop --build-arg MDM_UI_COMMIT=develop
+                docker-compose build --no-cache --progress=plain --build-arg MDM_APPLICATION_COMMIT=develop --build-arg MDM_UI_COMMIT=develop --build-arg MDM_UI_THEME_NAME="nhs-digital"
                 docker run -d --network mdm-network -p ${var.http_server_port}:8080 -e DATABASE_PASSWORD=${var.db_password} -e DATABASE_USERNAME=${var.db_username} -e DATABASE_HOST=${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint} -e database.host=${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint} -e runtime.config.path=/usr/local/tomcat/conf/runtime.yml maurodatamapper/mauro-data-mapper:2022.3
 
                 EOF
