@@ -109,4 +109,5 @@ variable "az_west_c" {
   default     = "eu-west-2c"
 }
 
-variable "certificate_arn" {}
+variable "certificate_arn" {
+}
