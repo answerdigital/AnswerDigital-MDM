@@ -21,11 +21,11 @@ resource "aws_lb_target_group" "mdm_target_group" {
   port = var.http_server_port
   protocol = var.http_protocol
   vpc_id = module.vpc_subnet.vpc_id
+
   stickiness {
     enabled = true
     type = "lb_cookie"
     cookie_name = "mdm_cookie"
-
   }
 
   health_check {
