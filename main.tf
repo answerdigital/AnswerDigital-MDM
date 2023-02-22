@@ -101,7 +101,7 @@ resource "aws_instance" "mdm_app1" {
   count                  = 1
   ami                    = "ami-084e8c05825742534"
   instance_type          = "t2.large"
-  subnet_id              = module.vpc_subnet.public_subnet_ids[count.index]
+  subnet_id              = module.vpc_subnet.public_subnet_ids[0]
   vpc_security_group_ids = [aws_security_group.mdm_api_sg.id]
   key_name               = var.ssh_key
   associate_public_ip_address = true
@@ -158,7 +158,7 @@ resource "aws_instance" "mdm_app2" {
   count                  = 1
   ami                    = "ami-084e8c05825742534"
   instance_type          = "t2.large"
-  subnet_id              = module.vpc_subnet.public_subnet_ids[count.index]
+  subnet_id              = module.vpc_subnet.public_subnet_ids[1]
   vpc_security_group_ids = [aws_security_group.mdm_api_sg.id]
   key_name               = var.ssh_key
   associate_public_ip_address = true
