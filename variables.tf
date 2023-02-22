@@ -109,5 +109,17 @@ variable "az_west_c" {
   default     = "eu-west-2c"
 }
 
+variable "mdm_authority_name" {
+  description = "MDM Authority Name"
+  type        = string
+  default     = "NHS England developments"
+}
+
+variable "mdm_domain_url" {
+  description = "MDM Domain Url"
+  type        = string
+  default     = "https://develop.metadata.nhs.uk"
+}
+
 variable "certificate_arn" {
 }
