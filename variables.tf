@@ -123,3 +123,37 @@ variable "mdm_domain_url" {
 
 variable "certificate_arn" {
 }
+
+variable "mdm_plugins_dev-test" {
+  type  = string
+  description = "Plugins required in Dev and Test environment"
+  default = <<-EOF
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-artdecor:2.2.0;
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-awsglue:2.2.0;
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-csv:4.2.0;
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-digital-object-identifiers:2.2.0;
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-excel:5.2.0;
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-fhir:2.2.0;
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-database-sqlserver:8.1.0;
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-database-mysql:7.1.0;
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-database-oracle:6.1.0;
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-database-postgresql:7.1.0;
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-xsd:1.2.0;
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-profile-dcat:2.2.0;
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-profile-schema-org:2.2.0;
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-authentication-openid-connect:2.2.0;
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-freemarker:2.2.0;
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-sparql:2.2.0
+  EOF
+}
+
+variable "mdm_plugins_prod" {
+  type  = string
+  description = "Plugins required in production environment"
+  default = <<-EOF
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-xsd:1.2.0;
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-authentication-openid-connect:2.2.0;
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-freemarker:2.2.0;
+    uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-sparql:2.2.0
+  EOF
+}
