@@ -19,8 +19,9 @@ resource "aws_ecs_service" "mdm_docker" {
     container_port   = var.container_internal_port
   }
   network_configuration {
-    security_groups  = [aws_security_group.mdm_api_sg.id]
+    security_groups  = [aws_security_group.ecs_service_sg.id]
     subnets          = [module.vpc_subnet.public_subnet_ids[0], module.vpc_subnet.public_subnet_ids[1]]
+    assign_public_ip = true
   }
 }
 
@@ -41,7 +42,6 @@ resource "aws_ecs_task_definition" "task_definition" {
       portMappings = [
         {
           containerPort = var.container_internal_port
-          hostPort      = var.container_internal_port
         }
       ]
       logConfiguration = {
@@ -76,10 +76,6 @@ resource "aws_ecs_task_definition" "task_definition" {
         {
           "name" : "ADDITIONAL_PLUGINS",
           "value" : var.mdm_plugins_dev-test
-        },
-        {
-          "name" : "MDM_UI_THEME_NAME",
-          "value" : "default"
         }
       ]
     }

@@ -104,6 +104,26 @@ resource "aws_security_group" "mdm_api_sg" {
   }
 }
 
+resource "aws_security_group" "ecs_service_sg" {
+  name_prefix = "ecs_service_sg"
+  vpc_id      = module.vpc_subnet.vpc_id
+
+  ingress {
+    description     = "Allow traffic to ecs only from the web sg"
+    from_port       = var.container_internal_port
+    to_port         = var.container_internal_port
+    protocol        = "tcp"
+    security_groups = [aws_security_group.mdm_api_sg.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_security_group" "mdm_db_sg" {
   name        = "mdm_db_sg"
   description = "Security group for database"
@@ -115,7 +135,7 @@ resource "aws_security_group" "mdm_db_sg" {
     from_port       = var.db_port
     protocol        = var.network_protocol
     to_port         = var.db_port
-    security_groups = [aws_security_group.mdm_api_sg.id]
+    security_groups = [aws_security_group.mdm_api_sg.id, aws_security_group.ecs_service_sg.id]
   }
 
   tags = {

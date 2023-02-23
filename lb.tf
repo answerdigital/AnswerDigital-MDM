@@ -1,48 +1,68 @@
-resource "aws_eip" "lb" {
-  vpc = true
 
-  tags = {
-    Name = "${var.project_name}-eip"
+resource "aws_lb_target_group" "mdm_target_group" {
+  name        = "mdm-app-front"
+  port        = var.http_server_port
+  protocol    = var.http_protocol
+  target_type      = "ip" # set target_type to ip
+  vpc_id      = module.vpc_subnet.vpc_id
+
+  stickiness {
+    enabled     = true
+    type        = "lb_cookie"
+    cookie_name = "mdm_cookie"
   }
-}
 
-resource "aws_alb" "eip_lb" {
-  name               = "${var.project_name}-lb"
-  internal           = false
-  load_balancer_type = "application"
-  subnets            = [module.vpc_subnet.public_subnet_ids[0]]
-  security_groups    = [aws_security_group.mdm_api_sg.id]
-
-  tags = {
-    Name = "${var.project_name}-lb"
-  }
-}
-
-resource "aws_alb_target_group" "eip_target" {
-  name_prefix      = "mdm-tg"
-  port             = var.container_internal_port
-  protocol         = "HTTP"
-  vpc_id           = module.vpc_subnet.public_subnet_ids[0]
-  target_type      = "ip"
   health_check {
-    interval            = 30
-    path                = "/health"
+    enabled             = true
+    healthy_threshold   = 3
+    interval            = 10
+    matcher             = 200
+    path                = "/"
     port                = "traffic-port"
-    protocol            = "HTTP"
-    healthy_threshold   = 2
+    protocol            = var.http_protocol
+    timeout             = 3
     unhealthy_threshold = 2
-    timeout             = 5
-    matcher             = "200"
   }
 }
 
-resource "aws_alb_listener" "eip_listener" {
-  load_balancer_arn = aws_alb.eip_lb.arn
+resource "aws_lb" "mdm_lb" {
+  name                      = "mdm-app-lb"
+  internal                  = false
+  load_balancer_type        = "application"
+  security_groups           = [aws_security_group.mdm_api_sg.id]
+  subnets                   = [module.vpc_subnet.public_subnet_ids[0], module.vpc_subnet.public_subnet_ids[1]]
+  enable_deletion_protection = true
+  tags = {
+    Name = "mdm-app-lb"
+  }
+}
+
+# Redirects http traffic to https
+resource "aws_lb_listener" "mdm_lb_listener" {
+  load_balancer_arn = aws_lb.mdm_lb.arn
   port              = var.http_server_port
-  protocol          = "HTTP"
+  protocol          = var.http_protocol
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+# Handles https traffic and forwards to ecs task
+resource "aws_lb_listener" "mdm_lb_listener2" {
+  load_balancer_arn = aws_lb.mdm_lb.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = var.certificate_arn
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_alb_target_group.eip_target.arn
+    target_group_arn = aws_lb_target_group.mdm_target_group.arn
   }
 }
