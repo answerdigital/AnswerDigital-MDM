@@ -25,12 +25,23 @@ variable "http_server_port" {
   default = 8082
 }
 
-variable "container_internal_port" {
-  default = 8080
+variable "https_server_port" {
+  default = 443
+}
+
+variable "http_protocol" {
+  default = "HTTP"
+}
+
+variable "https_protocol" {
+  default = "HTTPS"
 }
 
 variable "ssh_server_port" {
   default = 22
+}
+variable "container_internal_port" {
+  default = 8080
 }
 
 variable "ec2_key_name" {
@@ -99,6 +110,21 @@ variable "az_west_c" {
   description = "aws availability zone region 2C"
   type        = string
   default     = "eu-west-2c"
+}
+
+variable "mdm_authority_name" {
+  description = "MDM Authority Name"
+  type        = string
+  default     = "NHS England developments"
+}
+
+variable "mdm_domain_url" {
+  description = "MDM Domain Url"
+  type        = string
+  default     = "https://develop.metadata.nhs.uk"
+}
+
+variable "certificate_arn" {
 }
 
 variable "service_launch_type" {
