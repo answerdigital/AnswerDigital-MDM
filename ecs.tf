@@ -14,14 +14,13 @@ resource "aws_ecs_service" "mdm_docker" {
   scheduling_strategy = var.scheduling_strategy
 
   load_balancer {
-    target_group_arn = aws_alb_target_group.eip_target.arn
+    target_group_arn = aws_lb_target_group.mdm_target_group.arn
     container_name   = "${var.project_name}-container"
     container_port   = var.container_internal_port
   }
   network_configuration {
     security_groups  = [aws_security_group.mdm_api_sg.id]
-    subnets          = [module.vpc_subnet.public_subnet_ids[0]]
-    assign_public_ip = true
+    subnets          = [module.vpc_subnet.public_subnet_ids[0], module.vpc_subnet.public_subnet_ids[1]]
   }
 }
 
@@ -73,6 +72,14 @@ resource "aws_ecs_task_definition" "task_definition" {
         {
           "name" : "runtime.config.path",
           "value" : "/usr/local/tomcat/conf/runtime.yml"
+        },
+        {
+          "name" : "ADDITIONAL_PLUGINS",
+          "value" : var.mdm_plugins_dev-test
+        },
+        {
+          "name" : "MDM_UI_THEME_NAME",
+          "value" : "default"
         }
       ]
     }
