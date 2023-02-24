@@ -1,7 +1,7 @@
 
 resource "aws_lb_target_group" "mdm_target_group" {
   name        = "mdm-app-front"
-  port        = var.http_server_port
+  port        = var.container_internal_port
   protocol    = var.http_protocol
   target_type      = "ip" # set target_type to ip
   vpc_id      = module.vpc_subnet.vpc_id
@@ -15,12 +15,12 @@ resource "aws_lb_target_group" "mdm_target_group" {
   health_check {
     enabled             = true
     healthy_threshold   = 3
-    interval            = 10
+    interval            = 30
     matcher             = 200
     path                = "/"
     port                = "traffic-port"
     protocol            = var.http_protocol
-    timeout             = 3
+    timeout             = 10
     unhealthy_threshold = 2
   }
 }
@@ -64,5 +64,22 @@ resource "aws_lb_listener" "mdm_lb_listener2" {
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.mdm_target_group.arn
+  }
+}
+# handles http traffic and redirects to https
+resource "aws_lb_listener" "mdm_lb_listener3" {
+  load_balancer_arn = aws_lb.mdm_lb.arn
+  port  = var.domain_http_server_port
+  protocol = var.http_protocol
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+
+    }
   }
 }

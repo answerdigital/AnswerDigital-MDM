@@ -68,7 +68,7 @@ resource "aws_rds_cluster_instance" "postgres_secondary_instance" {
 
 resource "aws_security_group" "mdm_api_sg" {
   name        = "mdm_api_sg"
-  description = "Security group for tutorial web servers"
+  description = "Load Balancer security group"
   vpc_id      = module.vpc_subnet.vpc_id
 
   ingress {
@@ -93,8 +93,8 @@ resource "aws_security_group" "mdm_api_sg" {
   }
 
   ingress {
-    from_port   = 80
-    to_port     = 80
+    from_port   = var.domain_http_server_port
+    to_port     = var.domain_http_server_port
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }

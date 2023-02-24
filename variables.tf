@@ -29,6 +29,10 @@ variable "https_server_port" {
   default = 443
 }
 
+variable "domain_http_server_port" {
+  default = 80
+}
+
 variable "http_protocol" {
   default = "HTTP"
 }
@@ -172,5 +176,5 @@ variable "mdm_plugins_prod" {
 variable "docker_image_url" {
   type = string
   description = "Public Docker Image url from ECR"
-  default = "public.ecr.aws/r5f6k8o3/mdm-docker:latest"
+  default = "public.ecr.aws/r5f6k8o3/mdm-docker:dev1.2"
 }
