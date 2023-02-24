@@ -7,7 +7,7 @@ data "aws_availability_zones" "available" {
 }
 
 module "vpc_subnet" {
-  source              = "git::https://github.com/AnswerConsulting/AnswerKing-Infrastructure.git//Terraform_modules/vpc_subnets"
+  source              = "git::https://github.com/AnswerConsulting/AnswerKing-Infrastructure.git//Terraform_modules/vpc_subnets?ref=v1.1.1"
   owner               = "Mauro"
   project_name        = "mauro-data-mapper"
   azs                 = [data.aws_availability_zones.available.names[0], data.aws_availability_zones.available.names[1]]
