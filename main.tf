@@ -84,6 +84,23 @@ resource "aws_lb_listener" "mdm_lb_listener" {
   }
 }
 
+resource "aws_lb_listener" "mdm_lb_listener3" {
+  load_balancer_arn = aws_lb.mdm_lb.arn
+  port  = 80
+  protocol = var.http_protocol
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+
+    }
+  }
+}
+
 resource "aws_lb_listener" "mdm_lb_listener2" {
   load_balancer_arn = aws_lb.mdm_lb.arn
   port              = "443"
@@ -277,6 +294,13 @@ resource "aws_security_group" "mdm_api_sg" {
   ingress {
     from_port   = var.https_server_port
     to_port     = var.https_server_port
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
