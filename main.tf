@@ -7,7 +7,7 @@ data "aws_availability_zones" "available" {
 }
 
 module "vpc_subnet" {
-  source              = "git::https://github.com/AnswerConsulting/AnswerKing-Infrastructure.git//Terraform_modules/vpc_subnets"
+  source              = "git::https://github.com/AnswerConsulting/AnswerKing-Infrastructure.git//Terraform_modules/vpc_subnets?ref=v1.1.1"
   owner               = "Mauro"
   project_name        = "mauro-data-mapper"
   azs                  = [
@@ -88,6 +88,13 @@ resource "aws_security_group" "mdm_api_sg" {
   ingress {
     from_port   = var.https_server_port
     to_port     = var.https_server_port
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
