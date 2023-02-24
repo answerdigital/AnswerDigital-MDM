@@ -112,6 +112,12 @@ variable "az_west_c" {
   default     = "eu-west-2c"
 }
 
+variable "az_west_two" {
+  description = "aws availability zone region 2C"
+  type        = string
+  default     = "eu-west-2"
+}
+
 variable "mdm_authority_name" {
   description = "MDM Authority Name"
   type        = string
@@ -161,4 +167,10 @@ variable "mdm_plugins_prod" {
   type  = string
   description = "Plugins required in production environment"
   default = "uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-xsd:1.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-authentication-openid-connect:2.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-freemarker:2.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-sparql:2.2.0"
+}
+
+variable "docker_image_url" {
+  type = string
+  description = "Public Docker Image url from ECR"
+  default = "public.ecr.aws/r5f6k8o3/mdm-docker:latest"
 }

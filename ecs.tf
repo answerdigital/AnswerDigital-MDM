@@ -35,7 +35,7 @@ resource "aws_ecs_task_definition" "task_definition" {
   container_definitions    = jsonencode([
     {
       name         = "${var.project_name}-container"
-      image        = "public.ecr.aws/r5f6k8o3/mdm-docker:latest"
+      image        = var.docker_image_url
       cpu          = 2048
       memory       = 4096
       essential    = true
@@ -48,7 +48,7 @@ resource "aws_ecs_task_definition" "task_definition" {
         logDriver = "awslogs",
         options   = {
           "awslogs-group" : "${var.project_name}-log-group",
-          "awslogs-region" : "eu-west-2",
+          "awslogs-region" : var.az_west_two,
           "awslogs-stream-prefix" : "${var.project_name}-log-stream"
         }
       }
