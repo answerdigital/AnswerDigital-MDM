@@ -155,7 +155,7 @@ resource "aws_instance" "mdm_app1" {
                 # run docker containers based on the built docker compose images
                 docker network create -d bridge mdm-network
                 docker-compose build --no-cache --progress=plain --build-arg MDM_APPLICATION_COMMIT=develop --build-arg MDM_UI_COMMIT=develop --build-arg MDM_UI_THEME_NAME="nhs-digital" --build-arg ADDITIONAL_PLUGINS="${var.mdm_plugins_dev-test}"
-                docker run -d --network mdm-network -p ${var.http_server_port}:8080 -e maurodatamapper.authority.name="${var.mdm_authority_name}" -e maurodatamapper.authority.url="${var.mdm_domain_url}" -e DATABASE_PASSWORD=${var.db_password} -e DATABASE_USERNAME=${var.db_username} -e DATABASE_HOST=${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint} -e database.host=${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint} -e runtime.config.path=/usr/local/tomcat/conf/runtime.yml maurodatamapper/mauro-data-mapper:2022.3
+                docker run -d --network mdm-network -p ${var.http_server_port}:8080 -e maurodatamapper.authority.name="${var.mdm_authority_name}" -e maurodatamapper.authority.url="${var.mdm_domain_url}" -e DATABASE_PASSWORD=${var.db_password} -e DATABASE_USERNAME=${var.db_username} -e DATABASE_HOST=${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint} -e database.host=${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint} -e runtime.config.path=/usr/local/tomcat/conf/runtime.yml maurodatamapper/mauro-data-mapper:2023.1
               EOF
 
   depends_on = [
@@ -211,7 +211,7 @@ resource "aws_instance" "mdm_app2" {
                 # run docker containers based on the built docker compose images
                 docker network create -d bridge mdm-network
                 docker-compose build --no-cache --progress=plain --build-arg MDM_APPLICATION_COMMIT=develop --build-arg MDM_UI_COMMIT=develop --build-arg MDM_UI_THEME_NAME="nhs-digital"
-                docker run -d --network mdm-network -p ${var.http_server_port}:8080 -e maurodatamapper.authority.name="${var.mdm_authority_name}" -e maurodatamapper.authority.url="${var.mdm_domain_url}" -e DATABASE_PASSWORD=${var.db_password} -e DATABASE_USERNAME=${var.db_username} -e DATABASE_HOST=${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint} -e database.host=${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint} -e runtime.config.path=/usr/local/tomcat/conf/runtime.yml maurodatamapper/mauro-data-mapper:2022.3
+                docker run -d --network mdm-network -p ${var.http_server_port}:8080 -e maurodatamapper.authority.name="${var.mdm_authority_name}" -e maurodatamapper.authority.url="${var.mdm_domain_url}" -e DATABASE_PASSWORD=${var.db_password} -e DATABASE_USERNAME=${var.db_username} -e DATABASE_HOST=${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint} -e database.host=${aws_rds_cluster_instance.postgres_primary_instance[0].endpoint} -e runtime.config.path=/usr/local/tomcat/conf/runtime.yml maurodatamapper/mauro-data-mapper:2023.1
           EOF
 
   depends_on = [
@@ -229,7 +229,7 @@ resource "aws_rds_cluster" "postgres_cluster" {
   cluster_identifier      = "aurora-cluster-mdm"
   engine                  = "aurora-postgresql"
   engine_mode             = "provisioned"
-  availability_zones      = [var.az_west_a, var.az_west_b, var.az_west_c]
+  availability_zones      = [var.az_west_a, var.az_west_b,  var.az_west_c]
   database_name           = var.db_name
   master_username         = var.db_username
   master_password         = var.db_password
