@@ -1,16 +1,6 @@
-terraform {
-  backend "s3" {
-    bucket = "mdm-mauro-terraform-state"
-    key = "global/s3/terraform.tfstate"
-    region = "eu-west-2"
-    dynamodb_table = "mdm-tf-locks"
-    encrypt = true
-  }
-}
-
 
 resource "aws_s3_bucket" "mdm_mauro_terraform_state" {
-  bucket = "mdm-mauro-terraform-state"
+  bucket = "mdm-mauro-terraform-state-dev"
 
   # Prevent accidental deletion of this S3 bucket
   lifecycle {
@@ -45,7 +35,7 @@ resource "aws_s3_bucket_public_access_block" "mdm_s3_public_access" {
 }
 
 resource "aws_dynamodb_table" "mdm_tf_locks" {
-  name  = "mdm-tf-locks"
+  name  = "mdm-tf-locks-dev"
   billing_mode  = "PAY_PER_REQUEST"
   hash_key  = "LockID"
 

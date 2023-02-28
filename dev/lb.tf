@@ -53,6 +53,7 @@ resource "aws_lb_listener" "mdm_lb_listener" {
     }
   }
 }
+
 # Handles https traffic and forwards to ecs task
 resource "aws_lb_listener" "mdm_lb_listener2" {
   load_balancer_arn = aws_lb.mdm_lb.arn

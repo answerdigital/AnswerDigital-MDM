@@ -176,5 +176,5 @@ variable "mdm_plugins_prod" {
 variable "docker_image_url" {
   type = string
   description = "Public Docker Image url from ECR"
-  default = "public.ecr.aws/r5f6k8o3/mdm-docker:dev1.2"
+  default = "public.ecr.aws/e9q7c0a5/mdm-docker:dev1.3"
 }
