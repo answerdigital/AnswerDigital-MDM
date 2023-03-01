@@ -1,12 +1,3 @@
-terraform {
-  backend "s3" {
-    bucket = "mdm-mauro-terraform-state-prod"
-    key = "global/prod/s3/terraform.tfstate"
-    region = "eu-west-2"
-    dynamodb_table = "mdm-tf-locks-prod"
-    encrypt = true
-  }
-}
 
 resource "aws_s3_bucket" "mdm_mauro_terraform_state" {
   bucket = "mdm-mauro-terraform-state-prod"
