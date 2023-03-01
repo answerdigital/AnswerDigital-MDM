@@ -21,7 +21,7 @@ module "vpc_subnet" {
 
 resource "aws_security_group" "mdm_api_sg" {
   name        = "mdm_api_sg"
-  description = "Load Balancer security group"
+  description = "Security group for tutorial web servers"
   vpc_id      = module.vpc_subnet.vpc_id
 
   ingress {
