@@ -122,18 +122,6 @@ variable "az_west_two" {
   default     = "eu-west-2"
 }
 
-variable "mdm_authority_name" {
-  description = "MDM Authority Name"
-  type        = string
-  default     = "NHS England developments"
-}
-
-variable "mdm_domain_url" {
-  description = "MDM Domain Url"
-  type        = string
-  default     = "https://develop.metadata.nhs.uk"
-}
-
 variable "certificate_arn" {
 }
 
@@ -176,7 +164,7 @@ variable "mdm_plugins_prod" {
 variable "docker_image_url" {
   type = string
   description = "Public Docker Image url from ECR"
-  default = "public.ecr.aws/e9q7c0a5/mdm-docker:dev1.3"
+  default = "public.ecr.aws/h5l2l3o2/mdm-docker:prod1.1"
 }
 
 variable "ecs_cpu_allocation" {
