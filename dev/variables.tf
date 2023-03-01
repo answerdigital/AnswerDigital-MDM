@@ -178,3 +178,11 @@ variable "docker_image_url" {
   description = "Public Docker Image url from ECR"
   default = "public.ecr.aws/h5l2l3o2/mdm-docker:dev1.1"
 }
+
+variable "ecs_cpu_allocation" {
+  default = 2048
+}
+
+variable "ecs_memory_allocation" {
+  default = 4096
+}
