@@ -76,6 +76,22 @@ resource "aws_ecs_task_definition" "task_definition" {
         {
           "name" : "ADDITIONAL_PLUGINS",
           "value" : var.mdm_plugins_dev-test
+        },
+        {
+          "name" : "DATASOURCE_PASSWORD",
+          "value" : var.db_password
+        },
+        {
+          "name" : "database.name",
+          "value" : var.db_name
+        },
+        {
+          "name" : "dataSource.username",
+          "value" : var.db_username
+        },
+        {
+          "name" : "dataSource.password",
+          "value" : var.db_password
         }
       ]
     }
@@ -96,48 +112,17 @@ resource "aws_appautoscaling_target" "mdm_docker_target" {
 
 resource "aws_appautoscaling_policy" "memory_scaling_policy" {
   name               = "memory-scaling-policy"
-  policy_type        = "StepScaling"
+  policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.mdm_docker_target.resource_id
   scalable_dimension = aws_appautoscaling_target.mdm_docker_target.scalable_dimension
   service_namespace  = aws_appautoscaling_target.mdm_docker_target.service_namespace
 
-  step_scaling_policy_configuration {
-    adjustment_type         = "PercentChangeInCapacity"
-    cooldown                = 300
-    metric_aggregation_type = "Average"
-
-    step_adjustment {
-      metric_interval_upper_bound = "50"
-      scaling_adjustment          = "-1"
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
     }
-
-    step_adjustment {
-      metric_interval_lower_bound = "50"
-      scaling_adjustment          = "1"
-    }
+    scale_out_cooldown = 300
+    scale_in_cooldown  = 300
+    target_value = 50.0
   }
 }
-
-resource "aws_cloudwatch_metric_alarm" "memory_utilization_alarm" {
-  alarm_name          = "ecs-memory-utilization-alarm"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 1
-  metric_name         = "MemoryUtilization"
-  namespace           = "AWS/ECS"
-  period              = 300
-  statistic           = "Average"
-  threshold           = 70
-  alarm_description   = "This metric monitors the memory utilization of the ECS service."
-  alarm_actions       = [aws_appautoscaling_policy.memory_scaling_policy.arn]
-
-  dimensions = {
-    ServiceName = aws_ecs_service.mdm_docker.name
-    ClusterName = aws_ecs_cluster.mdm_docker.name
-  }
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_cloudwatch_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess"
-  role       = aws_iam_role.ecs_task_execution_role.name
-}
-
