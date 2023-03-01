@@ -1,12 +1,28 @@
-.idea
-.terraform
-.terraform.lock.hcl
-secrets.tfvars
-terraform.tfstate
-terraform.tfstate.backup
+../.idea
+dev/.terraform
+dev/.terraform.lock.hcl
+dev/secrets.tfvars
+dev/terraform.tfstate
+dev/terraform.tfstate.backup
 venv
 
-test/.idea
-test/.pytest_cache
+dev/test/.idea
+dev/test/.pytest_cache
+
+test/.terraform
+test/.terraform.lock.hcl
+test/secrets.tfvars
+test/terraform.tfstate
+test/terraform.tfstate.backup
+test/test/.idea
+test/test/.pytest_cache
+
+prod/.terraform
+prod/.terraform.lock.hcl
+prod/secrets.tfvars
+prod/terraform.tfstate
+prod/terraform.tfstate.backup
+prod/test/.idea
+prod/test/.pytest_cache
 
 **/__pycache__
