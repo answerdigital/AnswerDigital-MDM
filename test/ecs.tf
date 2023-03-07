@@ -92,6 +92,30 @@ resource "aws_ecs_task_definition" "task_definition" {
         {
           "name" : "dataSource.password",
           "value" : var.db_password
+        },
+        {
+          "name" : "maurodatamapper.email.from.address",
+          "value" : var.mdm_email_from_address
+        },
+        {
+          "name" : "simplejavamail.smtp.username",
+          "value" : aws_iam_access_key.access_key.id
+        },
+        {
+          "name" : "simplejavamail.smtp.password",
+          "value" : aws_iam_access_key.access_key.ses_smtp_password_v4
+        },
+        {
+          "name" : "simplejavamail.smtp.host",
+          "value" : var.mdm_email_server_url
+        },
+        {
+          "name" : "simplejavamail.smtp.port",
+          "value" : "587"
+        },
+        {
+          "name" : "simplejavamail.transportstrategy",
+          "value" : "SMTP_TLS"
         }
       ]
     }

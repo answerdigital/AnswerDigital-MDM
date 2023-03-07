@@ -186,3 +186,15 @@ variable "ecs_cpu_allocation" {
 variable "ecs_memory_allocation" {
   default = 4096
 }
+
+variable "mdm_email_from_address" {
+  type = string
+  description = "mdm email from address"
+  default = "nhse-mauro-support@answerdigital.com"
+}
+
+variable "mdm_email_server_url" {
+  type = string
+  description = "mdm email server url"
+  default = "email-smtp.eu-west-2.amazonaws.com"
+}

@@ -1,4 +1,5 @@
-../.idea
+../.idea/*
+.idea/*
 dev/.terraform
 dev/.terraform.lock.hcl
 dev/secrets.tfvars
