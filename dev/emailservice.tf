@@ -18,7 +18,7 @@ resource "aws_iam_access_key" "access_key" {
 data "aws_iam_policy_document" "policy_document" {
   statement {
     actions   = ["ses:SendEmail", "ses:SendRawEmail"]
-    resources = [aws_ses_email_identity.mdm_email_identity.arn]
+    resources = ["*"]
   }
 }
 

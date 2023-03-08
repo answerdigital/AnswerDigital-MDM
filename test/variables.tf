@@ -122,18 +122,6 @@ variable "az_west_two" {
   default     = "eu-west-2"
 }
 
-variable "mdm_authority_name" {
-  description = "MDM Authority Name"
-  type        = string
-  default     = "NHS England developments"
-}
-
-variable "mdm_domain_url" {
-  description = "MDM Domain Url"
-  type        = string
-  default     = "https://develop.metadata.nhs.uk"
-}
-
 variable "certificate_arn" {
 }
 
@@ -164,7 +152,7 @@ variable "network_protocol" {
 variable "mdm_plugins_dev-test" {
   type  = string
   description = "Plugins required in Dev and Test environment"
-  default = "uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-artdecor:2.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-awsglue:2.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-csv:4.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-digital-object-identifiers:2.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-excel:5.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-fhir:2.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-database-sqlserver:8.1.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-database-mysql:7.1.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-database-oracle:6.1.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-database-postgresql:7.1.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-xsd:1.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-profile-dcat:2.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-profile-schema-org:2.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-authentication-openid-connect:2.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-freemarker:2.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-sparql:2.2.0"
+  default = "uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-artdecor:2.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-awsglue:2.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-csv:4.3.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-digital-object-identifiers:2.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-excel:5.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-fhir:2.3.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-database-sqlserver:8.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-database-mysql:7.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-database-oracle:6.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-database-postgresql:7.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-xsd:1.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-profile-dcat:2.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-profile-schema-org:2.3.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-authentication-openid-connect:2.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-freemarker:2.2.0;uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-sparql:2.2.0"
 }
 
 variable "mdm_plugins_prod" {
@@ -176,7 +164,7 @@ variable "mdm_plugins_prod" {
 variable "docker_image_url" {
   type = string
   description = "Public Docker Image url from ECR"
-  default = "public.ecr.aws/e9q7c0a5/mdm-docker:dev1.3"
+  default = "public.ecr.aws/p0q4n0g0/mdm-docker:test1.1"
 }
 
 variable "ecs_cpu_allocation" {
