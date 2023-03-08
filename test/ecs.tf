@@ -127,7 +127,7 @@ resource "aws_ecs_task_definition" "task_definition" {
 }
 
 resource "aws_appautoscaling_target" "mdm_docker_target" {
-  max_capacity       = 10
+  max_capacity       = 5
   min_capacity       = 1
   resource_id        = "service/mdm_docker/${aws_ecs_service.mdm_docker.name}"
   scalable_dimension = "ecs:service:DesiredCount"
@@ -147,6 +147,6 @@ resource "aws_appautoscaling_policy" "memory_scaling_policy" {
     }
     scale_out_cooldown = 300
     scale_in_cooldown  = 300
-    target_value = 50.0
+    target_value = 75.0
   }
 }
