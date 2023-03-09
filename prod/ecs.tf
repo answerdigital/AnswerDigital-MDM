@@ -75,7 +75,7 @@ resource "aws_ecs_task_definition" "task_definition" {
         },
         {
           "name" : "ADDITIONAL_PLUGINS",
-          "value" : var.mdm_plugins_dev-test
+          "value" : var.mdm_plugins_prod
         },
         {
           "name" : "DATASOURCE_PASSWORD",
