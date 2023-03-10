@@ -104,7 +104,7 @@ variable "mdm_plugins_dev-test" {
 variable "docker_image_url" {
   type = string
   description = "Public Docker Image url from ECR"
-  default = "public.ecr.aws/e9q7c0a5/mdm-docker:dev1.3"
+  default = "349667944967.dkr.ecr.eu-west-2.amazonaws.com/mdm-docker:dev1.3"
 }
 
 variable "ecs_cpu_allocation" {
