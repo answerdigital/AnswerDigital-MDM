@@ -104,7 +104,7 @@ variable "mdm_plugins_prod" {
 variable "docker_image_url" {
   type = string
   description = "Public Docker Image url from ECR"
-  default = "public.ecr.aws/h5l2l3o2/mdm-docker:prod1.1"
+  default = "673599754891.dkr.ecr.eu-west-2.amazonaws.com/mdm-docker:prod1.1"
 }
 
 variable "ecs_cpu_allocation" {
