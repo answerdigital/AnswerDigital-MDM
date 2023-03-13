@@ -44,3 +44,8 @@ resource "aws_rds_cluster_instance" "postgres_secondary_instance" {
 
   publicly_accessible = false
 }
+
+resource "aws_db_cluster_snapshot" "auroradb_snapshot" {
+  db_cluster_identifier          = aws_rds_cluster.postgres_cluster.id
+  db_cluster_snapshot_identifier = "${var.db_name}-db"
+}

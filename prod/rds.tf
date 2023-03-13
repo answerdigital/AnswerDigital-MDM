@@ -24,13 +24,13 @@ resource "aws_rds_cluster_instance" "postgres_primary_instance" {
   instance_class     = "db.t3.medium"
   availability_zone  = var.az_west_a
 
-
   engine         = aws_rds_cluster.postgres_cluster.engine
   engine_version = aws_rds_cluster.postgres_cluster.engine_version
   preferred_maintenance_window = "sun:04:00-sun:05:00"
 
   publicly_accessible = false
 }
+
 resource "aws_rds_cluster_instance" "postgres_secondary_instance" {
   depends_on         = [aws_rds_cluster_instance.postgres_primary_instance]
   identifier         = "mdm-postgresdb-secondary"
@@ -43,4 +43,9 @@ resource "aws_rds_cluster_instance" "postgres_secondary_instance" {
   engine_version = aws_rds_cluster.postgres_cluster.engine_version
 
   publicly_accessible = false
+}
+
+resource "aws_db_cluster_snapshot" "auroradb_snapshot" {
+  db_cluster_identifier          = aws_rds_cluster.postgres_cluster.id
+  db_cluster_snapshot_identifier = "${var.db_name}-db"
 }
